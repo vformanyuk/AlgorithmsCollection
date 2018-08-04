@@ -1,7 +1,7 @@
-# AlgorithmsCollection
+# Algorithms Collection
 
-This reporistory contains a few algorithms I was implementing as a practise. In future new implementaions would be added here.
-Uploaded it here to have it under the thumb.
+This reporistory contains a few algorithms I was implementing as a practise. 
+In future new implementaions would be added here.
 
 ## Sorting
   * [Comb Sort](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/Sort/CombSort.cs)
