@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithms", "Algorithms\Algorithms.csproj", "{F92DD469-1B85-497C-B5DF-BEC7643CFDD0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Algorithms", "Algorithms\Algorithms.csproj", "{F92DD469-1B85-497C-B5DF-BEC7643CFDD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithms.Tests", "Algorithms.Tests\Algorithms.Tests.csproj", "{E8C9E1C8-19C5-4714-BDF8-7F912EB362AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{F92DD469-1B85-497C-B5DF-BEC7643CFDD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F92DD469-1B85-497C-B5DF-BEC7643CFDD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F92DD469-1B85-497C-B5DF-BEC7643CFDD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8C9E1C8-19C5-4714-BDF8-7F912EB362AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8C9E1C8-19C5-4714-BDF8-7F912EB362AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8C9E1C8-19C5-4714-BDF8-7F912EB362AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8C9E1C8-19C5-4714-BDF8-7F912EB362AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
