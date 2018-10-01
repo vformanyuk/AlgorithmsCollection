@@ -18,3 +18,5 @@ In future new implementaions would be added here.
   * [Fibbonachi non-recursive](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/Sequences/Fibb.cs)
 ## Graphs
   * TODO
+## Data Structures
+  * [Trie](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/DataStructures/Trie.cs)
