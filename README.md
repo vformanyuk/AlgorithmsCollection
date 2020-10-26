@@ -20,3 +20,4 @@ In future new implementaions would be added here.
   * TODO
 ## Data Structures
   * [Trie](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/DataStructures/Trie.cs)
+  * [Sum Tree](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/DataStructures/SumTree.cs)
