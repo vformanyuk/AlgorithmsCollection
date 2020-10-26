@@ -50,22 +50,22 @@ namespace Algorithms.DataStructures
 
         public int Get(int search)
         {
-            int lvlIdx = _tree.Length - 1;
-            if (_tree[lvlIdx] < search)
+            int lvlBaseIdx = _tree.Length - 1;
+            if (_tree[lvlBaseIdx] < search)
             {
                 throw new ArgumentOutOfRangeException("search", "Total tree sum is lesser then requested number");
             }
 
 
-            int offset = 0;
-            int searchIdx = lvlIdx;
+            int lvlIdx = 0;
+            int searchIdx = lvlBaseIdx;
             int lvl = 1;
 
             do
             {
-                lvlIdx -= (int)Math.Pow(2, lvl);
+                lvlBaseIdx -= (int)Math.Pow(2, lvl);
 
-                int leftChildIdx = lvlIdx + offset * 2;
+                int leftChildIdx = lvlBaseIdx + lvlIdx * 2;
                 int rightChildIdx = leftChildIdx + 1;
 
                 if (_tree[leftChildIdx] > search)
@@ -78,13 +78,13 @@ namespace Algorithms.DataStructures
                     search -= _tree[leftChildIdx];
                 }
 
-                if (lvlIdx > 0)
+                if (lvlBaseIdx > 0)
                 {
-                    offset = searchIdx % lvlIdx;
+                    lvlIdx = searchIdx % lvlBaseIdx;
                 }
                 lvl++;
             }
-            while (lvlIdx > 0);
+            while (lvlBaseIdx > 0);
 
             return _tree[searchIdx];
         }

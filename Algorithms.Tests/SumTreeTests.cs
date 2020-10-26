@@ -41,6 +41,12 @@ namespace Algorithms.Tests
         }
 
         [TestMethod]
+        public void TestGetOverflow()
+        {
+            Assert.ThrowsException<ArgumentOutOfRangeException>(() => _testSubject.Get(_testSubject.Total + 1));
+        }
+
+        [TestMethod]
         public void TestAddOverlap()
         {
             _testSubject.Add(10);
@@ -56,6 +62,16 @@ namespace Algorithms.Tests
 
         [TestMethod]
         public void TestUpdate()
+        {
+            _testSubject.Update(20, 6);
+            Assert.AreEqual(83, _testSubject.Total);
+
+            var result = _testSubject.Get(70); //hit updated interval
+            Assert.AreEqual(20, result);
+        }
+
+        [TestMethod]
+        public void TestUpdate2()
         {
             _testSubject.Update(11, 1);
             Assert.AreEqual(66, _testSubject.Total);
