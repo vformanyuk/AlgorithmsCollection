@@ -84,12 +84,12 @@ namespace Algorithms.DataStructures
                 }
                 lvl++;
             }
-            while (lvlBaseIdx > 0);
+            while (lvlBaseIdx >= Capacity);
 
             return _tree[searchIdx];
         }
 
-        private void Propagate(int idx, int lvl = 1)
+        private void Propagate(int idx)
         {
             if (idx >= _tree.Length - 1)
             {
@@ -109,9 +109,9 @@ namespace Algorithms.DataStructures
                 coupleIdx++;
             }
 
-            int parentIdx = Capacity / lvl + (idx + offset) / 2;
+            int parentIdx = Capacity + (idx + offset) / 2;
             _tree[parentIdx] = _tree[idx] + _tree[coupleIdx];
-            Propagate(parentIdx, lvl++);
+            Propagate(parentIdx);
         }
 
         public override string ToString()
