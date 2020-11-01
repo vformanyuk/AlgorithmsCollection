@@ -3,10 +3,13 @@ using System.Text;
 
 namespace Algorithms.DataStructures
 {
+    /// <summary>
+    /// This implementation works fine for binary tree of 2^X capacity
+    /// </summary>
     public class SumTree
     {
         private int _writeIdx;
-        private int[] _tree;
+        private float[] _tree;
 
         public SumTree(int capacity)
         {
@@ -15,40 +18,36 @@ namespace Algorithms.DataStructures
                 capacity++;
             }
             Capacity = capacity;
-            _tree = new int[capacity * 2 - 1];
+            _tree = new float[capacity * 2 - 1];
         }
 
         public int Capacity { get; }
 
-        public int Total => _tree[_tree.Length - 1];
+        public float Total => _tree[_tree.Length - 1];
 
-        public int Add(int item)
+        public int Add(float item)
         {
+            Propagate(_writeIdx, item - _tree[_writeIdx]);
             _tree[_writeIdx] = item;
 
-            Propagate(_writeIdx);
-
             var oldIdx = _writeIdx;
-
             _writeIdx = ++_writeIdx % Capacity;
-
             return oldIdx;
         }
 
-        public void Update(int item, int idx)
+        public void Update(float item, int idx)
         {
+            Propagate(idx, item - _tree[idx]);
             _tree[idx] = item;
-
-            Propagate(idx);
         }
 
         public void Delete(int idx)
         {
+            Propagate(idx, -_tree[idx]);
             _tree[idx] = 0;
-            Propagate(idx);
         }
 
-        public int Get(int search)
+        public float Get(float search)
         {
             int lvlBaseIdx = _tree.Length - 1;
             if (_tree[lvlBaseIdx] < search)
@@ -56,9 +55,9 @@ namespace Algorithms.DataStructures
                 throw new ArgumentOutOfRangeException("search", "Total tree sum is lesser then requested number");
             }
 
+            int searchIdx = lvlBaseIdx;
 
             int lvlIdx = 0;
-            int searchIdx = lvlBaseIdx;
             int lvl = 1;
 
             do
@@ -89,29 +88,16 @@ namespace Algorithms.DataStructures
             return _tree[searchIdx];
         }
 
-        private void Propagate(int idx)
+        private void Propagate(int idx, float change)
         {
             if (idx >= _tree.Length - 1)
             {
                 return;
             }
 
-            int coupleIdx = idx;
-            int offset = 0;
-
-            if (idx % 2 == 1)
-            {
-                coupleIdx--;
-                offset = -1;
-            }
-            else
-            {
-                coupleIdx++;
-            }
-
-            int parentIdx = Capacity + (idx + offset) / 2;
-            _tree[parentIdx] = _tree[idx] + _tree[coupleIdx];
-            Propagate(parentIdx);
+            int parentIdx = Capacity + idx / 2;
+            _tree[parentIdx] += change;
+            Propagate(parentIdx, change);
         }
 
         public override string ToString()
@@ -121,13 +107,16 @@ namespace Algorithms.DataStructures
             int offset = 0;
             while (end > 0)
             {
-                int startInterval = 0;
+                float startInterval = 0;
+                float endInterval = 0;
 
                 for (int i = 0; i < end; i++)
                 {
-                    rep.AppendFormat("[{0}]({1} - {2})\t", _tree[offset + i], startInterval, startInterval + _tree[offset + i] - 1);
-                    startInterval += _tree[offset + i];
+                    endInterval += _tree[offset + i];
+                    rep.AppendFormat("[{0} - {1}]({2})", startInterval, endInterval, _tree[offset + i]);
+                    startInterval = endInterval;
                 }
+                rep.AppendLine();
                 rep.AppendLine();
                 offset += end;
                 end /= 2;
