@@ -62,7 +62,7 @@ namespace Algorithms.DataStructures
 
             do
             {
-                lvlBaseIdx -= (int)Math.Pow(2, lvl);
+                lvlBaseIdx -= 1 << lvl; //(int)Math.Pow(2, lvl);
 
                 int leftChildIdx = lvlBaseIdx + lvlIdx * 2;
                 int rightChildIdx = leftChildIdx + 1;
