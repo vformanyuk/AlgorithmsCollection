@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Algorithms.DataStructures
@@ -10,41 +8,30 @@ namespace Algorithms.DataStructures
     public class Trie
     {
         private readonly Dictionary<char, TrieNode> _subTries = new Dictionary<char, TrieNode>();
-        private readonly HashSet<HashContainer> _words = new HashSet<HashContainer>();
         private readonly bool _isCaseSensetive;
+        private int _wordsCount = 0;
 
-        public int WordsCount => _words.Count;
+        public int WordsCount => _wordsCount;
 
         public Trie(bool caseSensetive = false) => _isCaseSensetive = caseSensetive;
 
-        public void Add(string word)
+        public bool Add(string word)
         {
-            var actualWord = _isCaseSensetive ? word : word.ToLower();
-
-            var wordBytes = Encoding.UTF8.GetBytes(actualWord);
-            bool isNewWord = false;
-            using (var sha = SHA256.Create())
-            {
-                var hash = sha.ComputeHash(wordBytes);
-                var wordContainer = new HashContainer(hash);
-                isNewWord = _words.Add(wordContainer);
-            }
-
-            if (!isNewWord) return;
-
-            var firstChar = actualWord[0];
+            var firstChar = _isCaseSensetive ? word[0] : Char.ToUpper(word[0]);
             if (!_subTries.ContainsKey(firstChar))
             {
-                _subTries.Add(firstChar, new TrieNode(actualWord));
-                return;
+                _subTries.Add(firstChar, new TrieNode(word, _isCaseSensetive));
+                _wordsCount++;
+                return true;
             }
-            _subTries[firstChar].Add(actualWord);
+            bool addResult = _subTries[firstChar].Add(word);
+            _wordsCount += addResult ? 1 : 0;
+            return addResult;
         }
 
         public void Clear()
         {
             _subTries.Clear();
-            _words.Clear();
         }
 
         public IEnumerable<string> Get(string pattern)
@@ -59,11 +46,8 @@ namespace Algorithms.DataStructures
                 return result;
             }
 
-            var actualWord = _isCaseSensetive ? pattern : pattern.ToLower();
-
-            var node = _subTries[actualWord[0]];
-
-            return node.GetWords(actualWord);
+            var key = _isCaseSensetive ? pattern[0] : Char.ToUpper(pattern[0]);
+            return _subTries[key].GetWords(pattern);
         }
 
         public bool Remove(string word)
@@ -73,22 +57,10 @@ namespace Algorithms.DataStructures
                 throw new ArgumentNullException(nameof(word));
             }
 
-            var actualWord = _isCaseSensetive ? word : word.ToLower();
-
-            var wordBytes = Encoding.UTF8.GetBytes(actualWord);
-            using (var sha = SHA256.Create())
-            {
-                var hash = sha.ComputeHash(wordBytes);
-                var wordContainer = new HashContainer(hash);
-                if (!_words.Contains(wordContainer))
-                {
-                    return false;
-                }
-            }
-
-            var node = _subTries[actualWord[0]];
-
-            return node.Remove(actualWord);
+            var key = _isCaseSensetive ? word[0] : Char.ToUpper(word[0]);
+            bool removeResult = _subTries[key].Remove(word);
+            _wordsCount -= removeResult ? 1 : 0;
+            return removeResult;
         }
 
         private class TrieNode
@@ -98,49 +70,55 @@ namespace Algorithms.DataStructures
 
             private IDictionary<char, TrieNode> _children;
 
-            public TrieNode(string word)
+            private readonly bool _isCaseSensetive;
+
+            public TrieNode(string word, bool caseSensetive)
             {
                 Key = word;
                 IsFinal = true;
+                _isCaseSensetive = caseSensetive;
             }
 
-            public void Add(string word)
+            public bool Add(string word, int index = 0)
             {
-                if (Char.ToUpper(word[0]) != Char.ToUpper(Key[0]))
+                if (Char.ToUpper(word[index]) != Char.ToUpper(Key[0]))
                 {
-                    throw new KeyNotFoundException($"Incorrect key {word[0]}");
+                    throw new KeyNotFoundException($"Incorrect key {word[index]}");
                 }
 
                 if (Key.Length > 1)
                 {
-                    AppendWord(Key.Substring(1));
+                    if(string.Compare(Key, word, !_isCaseSensetive) == 0) return false;
+
+                    AppendWord(Key, 1); //key is not final anymore so it should be distributed further
                     Key = Key[0].ToString();
                     IsFinal = false;
                 }
 
-                if (word.Length == 1)
+                if ((word.Length - index) == 1) //word.length == 1
                 {
+                    bool wasFinal = IsFinal;
                     IsFinal = true;
-                    return;
+                    return wasFinal ^ IsFinal;
                 }
 
-                AppendWord(word.Substring(1));
+                return AppendWord(word, index + 1);
             }
 
-            private void AppendWord(string word)
+            private bool AppendWord(string word, int index)
             {
                 if (_children == null)
                 {
                     _children = new Dictionary<char, TrieNode>();
                 }
 
-                var key = word[0];
-                if (!_children.ContainsKey(key))
+                var key = _isCaseSensetive ? word[index] : Char.ToUpper(word[index]);
+                if (_children.TryGetValue(key, out TrieNode node))
                 {
-                    _children.Add(key, new TrieNode(word));
-                    return;
+                    return node.Add(word, index);
                 }
-                _children[key].Add(word);
+                _children.Add(key, new TrieNode(word.Substring(index), _isCaseSensetive));
+                return true;
             }
 
             public IEnumerable<string> GetWords(string pattern)
@@ -161,13 +139,12 @@ namespace Algorithms.DataStructures
                 while (nodes.Count > 0)
                 {
                     var node = nodes.Pop();
-
                     if (branches.ContainsKey(node)) // handle branching
                     {
                         result = branches[node];
                         branches.Remove(node);
                     }
-                    result = result + node.Key;
+                    result += node.Key;
 
                     if (node.IsFinal && result.Length >= originalPatternLength)
                     {
@@ -190,7 +167,8 @@ namespace Algorithms.DataStructures
                         continue;
                     }
 
-                    if (node._children.TryGetValue(pattern[0], out TrieNode child))
+                    char key = _isCaseSensetive ? pattern[0] : Char.ToUpper(pattern[0]);
+                    if (node._children.TryGetValue(key, out TrieNode child))
                     {
                         nodes.Push(child);
                     }
@@ -201,59 +179,67 @@ namespace Algorithms.DataStructures
 
             public bool Remove(string wordToRemove)
             {
-                var backTrace = new Stack<TrieNode>();
                 var forward = new Stack<TrieNode>();
 
-                var pattern = wordToRemove.Substring(1);
-                string result = string.Empty;
+                int patternIndex = 1;
+                StringBuilder result = new StringBuilder();
+                TrieNode removeCandidate = null;
                 bool wasRemoved = false;
 
                 forward.Push(this);
-                backTrace.Push(this);
 
                 while (forward.Count > 0)
                 {
-                    var node = forward.Pop();
-                    result = result + node.Key;
+                    var node = forward.Peek();
+                    result.Append(node.Key);
 
-                    if (node.IsFinal && result == wordToRemove)
+                    if (node.IsFinal && 
+                        result.Length == wordToRemove.Length && 
+                        string.Compare(result.ToString(), wordToRemove, !_isCaseSensetive) == 0)
                     {
-                        node.IsFinal = false;
                         wasRemoved = true;
+                        node.IsFinal = false;
+                        if (node._children is null || node._children.Count == 0)
+                        {
+                            removeCandidate = node;
+                        }
                         break;
                     }
 
-                    if (node._children == null || string.IsNullOrEmpty(pattern))
+                    if (node._children == null)
                     {
                         break;
                     }
 
-                    if (node._children.TryGetValue(pattern[0], out TrieNode child))
+                    char key = _isCaseSensetive ? wordToRemove[patternIndex] : Char.ToUpper(wordToRemove[patternIndex]);
+                    if (node._children.TryGetValue(key, out TrieNode child))
                     {
                         forward.Push(child);
-                        backTrace.Push(child);
                     }
 
-                    pattern = pattern.Substring(1);
+                    patternIndex++;
                 }
 
-                TrieNode childToRemove = null;
-                while (backTrace.Count > 0 && wasRemoved)
+                if (removeCandidate != null)
                 {
-                    var node = backTrace.Pop();
-                    if (childToRemove != null)
-                    {
-                        node._children.Remove(childToRemove.Key[0]);
-                    }
-
-                    if (node._children?.Count > 0)
-                    {
-                        break;
-                    }
-
-                    childToRemove = node;
+                    forward.Pop(); // pop removed node
                 }
-                backTrace.Clear();
+
+                while (removeCandidate != null && forward.Count > 0)
+                {
+                    var node = forward.Pop();
+                    char key = _isCaseSensetive ? removeCandidate.Key[0] : Char.ToUpper(removeCandidate.Key[0]);
+                    node._children.Remove(key);
+                    
+                    if (!node.IsFinal && node._children.Count == 0)
+                    {
+                        removeCandidate = node;
+                    }
+                    else
+                    {
+                        removeCandidate = null;
+                    }
+                }
 
                 return wasRemoved;
             }
@@ -261,51 +247,6 @@ namespace Algorithms.DataStructures
             public override string ToString()
             {
                 return $"{this.Key} {(this.IsFinal ? " is Final" : string.Empty)}";
-            }
-        }
-
-        [StructLayout(layoutKind: LayoutKind.Sequential, Pack = 8)]
-        private readonly struct HashContainer
-        {
-            public ulong Part1 { get; }
-            public ulong Part2 { get; }
-            public ulong Part3 { get; }
-            public ulong Part4 { get; }
-
-            public HashContainer(byte[] hash)
-            {
-                Part1 = ((ulong)hash[0] << 56) |
-                        ((ulong)hash[1] << 48) |
-                        ((ulong)hash[2] << 40) |
-                        ((ulong)hash[3] << 32) |
-                        ((ulong)hash[4] << 24) |
-                        ((ulong)hash[5] << 16) |
-                        ((ulong)hash[6] << 8) |
-                        hash[7];
-                Part2 = ((ulong)hash[8] << 56) |
-                        ((ulong)hash[9] << 48) |
-                        ((ulong)hash[10] << 40) |
-                        ((ulong)hash[11] << 32) |
-                        ((ulong)hash[12] << 24) |
-                        ((ulong)hash[13] << 16) |
-                        ((ulong)hash[14] << 8) |
-                        hash[15];
-                Part3 = ((ulong)hash[16] << 56) |
-                        ((ulong)hash[17] << 48) |
-                        ((ulong)hash[18] << 40) |
-                        ((ulong)hash[19] << 32) |
-                        ((ulong)hash[20] << 24) |
-                        ((ulong)hash[21] << 16) |
-                        ((ulong)hash[22] << 8) |
-                        hash[23];
-                Part4 = ((ulong)hash[24] << 56) |
-                        ((ulong)hash[25] << 48) |
-                        ((ulong)hash[26] << 40) |
-                        ((ulong)hash[27] << 32) |
-                        ((ulong)hash[28] << 24) |
-                        ((ulong)hash[29] << 16) |
-                        ((ulong)hash[30] << 8) |
-                        hash[31];
             }
         }
     }

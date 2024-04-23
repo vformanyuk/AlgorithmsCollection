@@ -1,0 +1,17 @@
+﻿Load (100 verbs)
+
+| Method | Mean     | Error     | StdDev    | Allocated |
+|------- |---------:|----------:|----------:|----------:|
+| Load1  | 7.399 us | 0.1474 us | 0.2066 us |  26.05 KB |
+
+No substrings while adding words
+
+| Method | Mean     | Error     | StdDev    | Allocated |
+|------- |---------:|----------:|----------:|----------:|
+| Load   | 6.479 us | 0.1276 us | 0.1253 us |  20.81 KB |
+
+Remove method optimization. ???
+
+| Method | Mean     | Error     | StdDev    | Allocated |
+|------- |---------:|----------:|----------:|----------:|
+| Load   | 6.597 us | 0.1243 us | 0.1221 us |  24.57 KB |

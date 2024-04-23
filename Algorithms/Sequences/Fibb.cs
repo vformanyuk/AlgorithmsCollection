@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Algorithms
 {
@@ -10,8 +11,7 @@ namespace Algorithms
             // xi = x(i-1)+x(i-2)
             // 0,1,1,2,3,5,8,13,21,34,55
 
-            //Sequence(30); // I tierd waiting. Screw it...
-            Console.WriteLine(string.Join(',', Sequence_NoRecursion(30)));
+            Console.WriteLine(string.Join(",", Sequence_NoRecursion(30).Select(x => x.ToString())));
         }
 
         private int Sequence(int nth)
