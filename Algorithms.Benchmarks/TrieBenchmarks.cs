@@ -1,12 +1,5 @@
 ﻿using Algorithms.DataStructures;
 using BenchmarkDotNet.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Algorithms.Benchmarks
 {
@@ -26,6 +19,7 @@ namespace Algorithms.Benchmarks
                 "know",
                 "will",
                 "think",
+            "strange",
                 "take",
                 "see",
                 "come",
@@ -43,15 +37,18 @@ namespace Algorithms.Benchmarks
                 "try",
                 "ask",
                 "need",
+            "Strong",
                 "feel",
                 "become",
                 "leave",
+            "STRONG",
                 "put",
                 "mean",
                 "keep",
                 "let",
                 "begin",
                 "seem",
+            "STRONGER",
                 "help",
                 "talk",
                 "turn",
@@ -96,6 +93,7 @@ namespace Algorithms.Benchmarks
                 "open",
                 "walk",
                 "win",
+            "STRONGEST",
                 "offer",
                 "remember",
                 "love",
@@ -115,7 +113,7 @@ namespace Algorithms.Benchmarks
                 "kill",
                 "remain"];
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void Load()
         {
             var trie = new Trie(caseSensetive: true);
@@ -125,5 +123,17 @@ namespace Algorithms.Benchmarks
             }
         }
 
+        [Benchmark]
+        public void Find()
+        {
+            var trie = new Trie(caseSensetive: true);
+            foreach (var word in verbs)
+            {
+                trie.Add(word);
+            }
+
+            trie.Get("STR");
+            trie.Get("co");
+        }
     }
 }

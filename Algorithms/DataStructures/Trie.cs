@@ -68,7 +68,7 @@ namespace Algorithms.DataStructures
             public bool IsFinal { get; private set; }
             public string Key { get; private set; }
 
-            private IDictionary<char, TrieNode> _children;
+            private Dictionary<char, TrieNode> _children;
 
             private readonly bool _isCaseSensetive;
 
@@ -95,7 +95,7 @@ namespace Algorithms.DataStructures
                     IsFinal = false;
                 }
 
-                if ((word.Length - index) == 1) //word.length == 1
+                if ((word.Length - index) == 1)
                 {
                     bool wasFinal = IsFinal;
                     IsFinal = true;
