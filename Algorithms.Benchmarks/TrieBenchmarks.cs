@@ -135,5 +135,26 @@ namespace Algorithms.Benchmarks
             trie.Get("STR");
             trie.Get("co");
         }
+
+        [Benchmark]
+        public void Remove()
+        {
+            var trie = new Trie(caseSensetive: true);
+            foreach (var word in verbs)
+            {
+                trie.Add(word);
+            }
+
+            trie.Remove("STRONG");
+            trie.Remove("expect");
+            trie.Remove("show");
+            trie.Remove("strange");
+            trie.Remove("serve");
+            trie.Remove("keep");
+            trie.Remove("would");
+            trie.Remove("be");
+            trie.Remove("continue");
+            trie.Remove("move");
+        }
     }
 }

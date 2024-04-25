@@ -114,5 +114,17 @@ namespace Algorithms.Tests
 
             Assert.AreEqual(2, words.Count);
         }
+
+        [TestMethod]
+        public void TestRemove_NonExistingNode()
+        {
+            Assert.AreEqual(false, _testSubject.Remove("non-existant"));
+        }
+
+        [TestMethod]
+        public void TestRemove_PartialyExistingNode()
+        {
+            Assert.AreEqual(false, _testSubject.Remove("swo"));
+        }
     }
 }

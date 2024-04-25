@@ -73,8 +73,12 @@ namespace Algorithms.DataStructures
             }
 
             var key = _isCaseSensetive ? word[0] : Char.ToUpper(word[0]);
-            bool removeResult = _subTries[key].Remove(word);
-            _wordsCount -= removeResult ? 1 : 0;
+            bool removeResult = false;
+            if(_subTries.TryGetValue(key, out TrieNode node))
+            {
+                removeResult = node.Remove(word);
+                _wordsCount -= removeResult ? 1 : 0;
+            }
             return removeResult;
         }
 
@@ -323,7 +327,8 @@ namespace Algorithms.DataStructures
                 var forward = new Stack<TrieNode>();
 
                 int patternIndex = 1;
-                StringBuilder result = new StringBuilder();
+                var result = new char[wordToRemove.Length];
+                int resultIndex = 0;
                 TrieNode removeCandidate = null;
                 bool wasRemoved = false;
 
@@ -332,11 +337,29 @@ namespace Algorithms.DataStructures
                 while (forward.Count > 0)
                 {
                     var node = forward.Peek();
-                    result.Append(node.HasSuffix ? node.Suffix : node.Key.ToString());
 
+                    if (resultIndex + (node.HasSuffix ? node.Suffix.Length : 1) > wordToRemove.Length)
+                    {
+                        return false;
+                    }
+
+                    if (node.HasSuffix)
+                    {
+                        for (int i = 0; i < node.Suffix.Length; i++)
+                        {
+                            result[resultIndex] = node.Suffix[i];
+                            resultIndex++;
+                        }
+                    }
+                    else
+                    {
+                        result[resultIndex] = node.Key;
+                        resultIndex++;
+                    }
+                    
                     if (node.IsFinal &&
                         result.Length == wordToRemove.Length &&
-                        string.Compare(result.ToString(), wordToRemove, !_isCaseSensetive) == 0)
+                        string.Compare(new string(result), wordToRemove, !_isCaseSensetive) == 0)
                     {
                         wasRemoved = true;
                         node.IsFinal = false;
@@ -344,7 +367,12 @@ namespace Algorithms.DataStructures
                         {
                             removeCandidate = node;
                         }
-                        
+
+                        break;
+                    }
+
+                    if (patternIndex >= wordToRemove.Length)
+                    {
                         break;
                     }
 

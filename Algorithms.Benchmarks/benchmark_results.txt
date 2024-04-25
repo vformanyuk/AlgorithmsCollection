@@ -28,3 +28,23 @@ Use single child instead of dictionary when having only one branch
 |------- |---------:|----------:|----------:|------:|----------:|------------:|
 | Load   | 5.119 us | 0.0532 us | 0.0498 us |  1.00 |  25.29 KB |        1.00 |
 | Find   | 5.060 us | 0.0188 us | 0.0176 us |  0.99 |  25.48 KB |        1.01 |
+
+| Method | Mean     | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|------- |---------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load   | 5.277 us | 0.1027 us | 0.0960 us |  1.00 |    0.00 |  25.29 KB |        1.00 |
+| Find   | 6.817 us | 0.0172 us | 0.0144 us |  1.30 |    0.02 |  25.48 KB |        1.01 |
+| Remove | 6.083 us | 0.0269 us | 0.0251 us |  1.15 |    0.02 |  27.92 KB |        1.10 |
+
+Replace StringBuilder with char array in Remove method
+
+| Method | Mean     | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|------- |---------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load   | 5.278 us | 0.1041 us | 0.1114 us |  1.00 |    0.00 |  25.29 KB |        1.00 |
+| Find   | 5.749 us | 0.0216 us | 0.0202 us |  1.09 |    0.02 |  25.48 KB |        1.01 |
+| Remove | 6.266 us | 0.0454 us | 0.0403 us |  1.19 |    0.02 |  26.94 KB |        1.07 |
+
+| Method | Mean     | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|------- |---------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load   | 5.936 us | 0.0991 us | 0.0927 us |  1.00 |    0.00 |  25.29 KB |        1.00 |
+| Find   | 6.861 us | 0.0232 us | 0.0206 us |  1.16 |    0.02 |  25.48 KB |        1.01 |
+| Remove | 6.134 us | 0.0425 us | 0.0398 us |  1.03 |    0.02 |  26.94 KB |        1.07 |
