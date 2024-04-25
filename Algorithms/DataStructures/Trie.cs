@@ -82,6 +82,7 @@ namespace Algorithms.DataStructures
         {
             public bool IsFinal { get; private set; }
             public char Key { get; private set; }
+            public char CaseAwareKey { get; }
             public string Suffix { get; private set; }
             public bool HasSuffix => !string.IsNullOrEmpty(Suffix);
 
@@ -89,12 +90,11 @@ namespace Algorithms.DataStructures
             private Dictionary<char, TrieNode> _children;
 
             private readonly bool _isCaseSensetive;
-            private readonly char _realKey;
 
             public TrieNode(string suffix, bool caseSensetive)
             {
                 _isCaseSensetive = caseSensetive;
-                _realKey = _isCaseSensetive ? suffix[0] : Char.ToUpper(suffix[0]);
+                CaseAwareKey = _isCaseSensetive ? suffix[0] : Char.ToUpper(suffix[0]);
 
                 IsFinal = true;
                 Suffix = suffix;
@@ -134,7 +134,7 @@ namespace Algorithms.DataStructures
 
                 if (_child != null)
                 {
-                    node = _child._realKey == key ? _child : null;
+                    node = _child.CaseAwareKey == key ? _child : null;
                     result = node != null;
                 }
                 else if (_children != null)
@@ -142,6 +142,27 @@ namespace Algorithms.DataStructures
                     result = _children.TryGetValue(key, out node);
                 }
 
+                return result;
+            }
+
+            private bool RemoveChild(char key)
+            {
+                bool result = false;
+                if (_child != null && _child.CaseAwareKey == key)
+                {
+                    _child = null;
+                    result = true;
+                }
+                else if (_children != null)
+                {
+                    result = _children.Remove(key);
+                    if (_children.Count == 1)
+                    {
+                        _child = _children[_children.Keys.First()];
+                        _children.Clear();
+                        _children = null;
+                    }
+                }
                 return result;
             }
 
@@ -159,7 +180,7 @@ namespace Algorithms.DataStructures
                 }
 
                 var key = _isCaseSensetive ? word[index] : Char.ToUpper(word[index]);
-                if (_child != null && _child._realKey == key)
+                if (_child != null && _child.CaseAwareKey == key)
                 {
                     return _child.Add(word, index);
                 }
@@ -168,7 +189,7 @@ namespace Algorithms.DataStructures
                 {
                     _children = new Dictionary<char, TrieNode>
                     {
-                        { _child._realKey, _child }
+                        { _child.CaseAwareKey, _child }
                     };
                     _child = null;
                 }
@@ -345,10 +366,9 @@ namespace Algorithms.DataStructures
                 while (removeCandidate != null && forward.Count > 0)
                 {
                     var node = forward.Pop();
-                    char key = _isCaseSensetive ? removeCandidate.Key : Char.ToUpper(removeCandidate.Key);
-                    node._children.Remove(key);
+                    node.RemoveChild(removeCandidate.CaseAwareKey);
                     
-                    if (!node.IsFinal && node._children.Count == 0)
+                    if (!node.IsFinal && node.IsEmptyNode())
                     {
                         removeCandidate = node;
                     }
