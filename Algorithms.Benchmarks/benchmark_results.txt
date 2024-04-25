@@ -43,8 +43,10 @@ Replace StringBuilder with char array in Remove method
 | Find   | 5.749 us | 0.0216 us | 0.0202 us |  1.09 |    0.02 |  25.48 KB |        1.01 |
 | Remove | 6.266 us | 0.0454 us | 0.0403 us |  1.19 |    0.02 |  26.94 KB |        1.07 |
 
+Replace string comparison with sequance equals. Consider case sensetivity and preallocate remove patter
+
 | Method | Mean     | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
 |------- |---------:|----------:|----------:|------:|--------:|----------:|------------:|
-| Load   | 5.936 us | 0.0991 us | 0.0927 us |  1.00 |    0.00 |  25.29 KB |        1.00 |
-| Find   | 6.861 us | 0.0232 us | 0.0206 us |  1.16 |    0.02 |  25.48 KB |        1.01 |
-| Remove | 6.134 us | 0.0425 us | 0.0398 us |  1.03 |    0.02 |  26.94 KB |        1.07 |
+| Load   | 5.210 us | 0.0719 us | 0.0673 us |  1.00 |    0.00 |  25.29 KB |        1.00 |
+| Find   | 5.042 us | 0.0246 us | 0.0218 us |  0.97 |    0.02 |  25.48 KB |        1.01 |
+| Remove | 5.796 us | 0.0356 us | 0.0316 us |  1.11 |    0.02 |  26.95 KB |        1.07 |

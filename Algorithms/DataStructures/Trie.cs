@@ -327,8 +327,18 @@ namespace Algorithms.DataStructures
                 var forward = new Stack<TrieNode>();
 
                 int patternIndex = 1;
-                var result = new char[wordToRemove.Length];
+                char[] pattern = wordToRemove.ToCharArray();
+                if (!_isCaseSensetive)
+                {
+                    for (int i = 0; i < pattern.Length; i++)
+                    {
+                        pattern[i] = Char.ToUpper(pattern[i]);
+                    }
+                }
+
                 int resultIndex = 0;
+                var result = new char[wordToRemove.Length];
+                
                 TrieNode removeCandidate = null;
                 bool wasRemoved = false;
 
@@ -347,19 +357,17 @@ namespace Algorithms.DataStructures
                     {
                         for (int i = 0; i < node.Suffix.Length; i++)
                         {
-                            result[resultIndex] = node.Suffix[i];
+                            result[resultIndex] = _isCaseSensetive ? node.Suffix[i] : Char.ToUpper(node.Suffix[i]);
                             resultIndex++;
                         }
                     }
                     else
                     {
-                        result[resultIndex] = node.Key;
+                        result[resultIndex] = node.CaseAwareKey;
                         resultIndex++;
                     }
-                    
-                    if (node.IsFinal &&
-                        result.Length == wordToRemove.Length &&
-                        string.Compare(new string(result), wordToRemove, !_isCaseSensetive) == 0)
+
+                    if (node.IsFinal && result.Length == wordToRemove.Length && Enumerable.SequenceEqual(pattern, result))
                     {
                         wasRemoved = true;
                         node.IsFinal = false;
