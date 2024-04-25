@@ -1,4 +1,5 @@
-﻿using BenchmarkDotNet.Running;
+﻿using Algorithms.DataStructures;
+using BenchmarkDotNet.Running;
 
 namespace Algorithms.Benchmarks
 {
@@ -8,28 +9,20 @@ namespace Algorithms.Benchmarks
         {
             BenchmarkRunner.Run<TrieBenchmarks>();
 
-            //var benchmark = new ApexReplayBufferInsertBenchmark();
-            //Console.WriteLine("Filling up replay buffer");
-            //benchmark.Setup();
-            //if (!benchmark.Buffer.IsComplete())
-            //{
-            //    Console.WriteLine("Data lost on buffer fillup");
-            //    return;
-            //}
-            //Console.WriteLine("Beginning insert operation");
-            //var watch = Stopwatch.StartNew();
-            ////benchmark.InSort_LinearSearch(); //783 ms
-            ////benchmark.DelaySort(); // 360 ms
-            ////benchmark.InSort_BinarySearch(); // 64 ms
-            ////benchmark.InSort_BinarySearch_SIMD();
-            //for (int i = 0; i < 40; i++)
-            //{
-            //    benchmark.InSort_BinarySearch_SIMD(); // 64 ms
-            //    //benchmark.InSort_BinarySearch(); // 64 ms
-            //    //benchmark.InSort_BinarySearch_SIMD_Linear_SIMD(); // 64 ms
-            //}
-            //watch.Stop();
-            //Console.WriteLine($"{watch.ElapsedMilliseconds} ms");
+            //var _testSubject = new Trie(caseSensetive: true);
+
+            //_testSubject.Add("string");
+            //_testSubject.Add("strange");
+            //_testSubject.Add("Strong");
+            //_testSubject.Add("STRONG");
+            //_testSubject.Add("STRONGER");
+            //_testSubject.Add("STRONGEST");
+            //_testSubject.Add("str");
+            //_testSubject.Add("sword");
+            //_testSubject.Add("def");
+            //_testSubject.Add(" random");
+
+            //_testSubject.Match("Str");
         }
     }
 }

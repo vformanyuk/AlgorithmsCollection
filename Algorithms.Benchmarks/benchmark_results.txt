@@ -21,3 +21,10 @@ Remove method optimization. ???
 |------- |---------:|----------:|----------:|------:|--------:|----------:|------------:|
 | Load   | 7.305 us | 0.1171 us | 0.1096 us |  1.00 |    0.00 |  26.92 KB |        1.00 |
 | Find   | 7.178 us | 0.0849 us | 0.0753 us |  0.98 |    0.02 |  27.11 KB |        1.01 |
+
+Use single child instead of dictionary when having only one branch
+
+| Method | Mean     | Error     | StdDev    | Ratio | Allocated | Alloc Ratio |
+|------- |---------:|----------:|----------:|------:|----------:|------------:|
+| Load   | 5.119 us | 0.0532 us | 0.0498 us |  1.00 |  25.29 KB |        1.00 |
+| Find   | 5.060 us | 0.0188 us | 0.0176 us |  0.99 |  25.48 KB |        1.01 |
