@@ -50,3 +50,20 @@ Replace string comparison with sequance equals. Consider case sensetivity and pr
 | Load   | 5.210 us | 0.0719 us | 0.0673 us |  1.00 |    0.00 |  25.29 KB |        1.00 |
 | Find   | 5.042 us | 0.0246 us | 0.0218 us |  0.97 |    0.02 |  25.48 KB |        1.01 |
 | Remove | 5.796 us | 0.0356 us | 0.0316 us |  1.11 |    0.02 |  26.95 KB |        1.07 |
+
+Add reference to parent node, don't use Stack for deletion
+
+| Method    | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|---------- |----------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load      |  5.250 us | 0.0646 us | 0.0540 us |  1.00 |    0.00 |  26.49 KB |        1.00 |
+| Find      |  5.629 us | 0.0470 us | 0.0439 us |  1.07 |    0.00 |  26.68 KB |        1.01 |
+| RemoveAll | 12.269 us | 0.0326 us | 0.0289 us |  2.34 |    0.02 |  36.46 KB |        1.38 |
+
+Match method with string builder
+
+| Method    | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|---------- |----------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load      |  5.128 us | 0.1013 us | 0.1084 us |  1.00 |    0.00 |  26.49 KB |        1.00 |
+| Find      |  5.081 us | 0.0129 us | 0.0120 us |  0.99 |    0.02 |  26.68 KB |        1.01 |
+| FindMatch |  4.931 us | 0.0275 us | 0.0257 us |  0.96 |    0.02 |  26.65 KB |        1.01 |
+| RemoveAll | 11.430 us | 0.0799 us | 0.0748 us |  2.22 |    0.04 |  36.46 KB |        1.38 |

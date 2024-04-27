@@ -15,7 +15,7 @@ namespace Algorithms.Tests
         [TestInitialize]
         public void Setup()
         {
-            _testSubject = new Trie(caseSensetive: true);
+            _testSubject = new Trie();
 
             _testSubject.Add("string");
             _testSubject.Add("strange");
@@ -49,7 +49,7 @@ namespace Algorithms.Tests
         [DataRow("S", 4, DisplayName = "Get all 'S' words")]
         public void TestGet(string input, int expected)
         {
-            var words = _testSubject.Get(input).ToList();
+            var words = _testSubject.Get(input, caseSensitive: true).ToList();
             Assert.AreEqual(expected, words.Count);
 
             foreach (var w in words)
@@ -57,19 +57,19 @@ namespace Algorithms.Tests
                 Console.WriteLine(w);
             }
         }
-
+        
         [TestMethod]
         public void TestGet_NoMatch()
         {
-            var words = _testSubject.Get("st0").ToList();
+            var words = _testSubject.Get("st0", caseSensitive: true).ToList();
 
             Assert.AreEqual(0, words.Count);
         }
-
+        
         [TestMethod]
         public void TestGet_KeyPart()
         {
-            var words = _testSubject.Get("de").ToList();
+            var words = _testSubject.Get("de", caseSensitive: true).ToList();
 
             Assert.AreEqual(1, words.Count, "Expected result 'def'");
         }
@@ -77,7 +77,7 @@ namespace Algorithms.Tests
         [TestMethod]
         public void TestGet_KeyPart2()
         {
-            var words = _testSubject.Get("stri").ToList();
+            var words = _testSubject.Get("stri", caseSensitive: true).ToList();
 
             Assert.AreEqual(1, words.Count, "Expected result 'string'");
         }
@@ -85,7 +85,55 @@ namespace Algorithms.Tests
         [TestMethod]
         public void TestGet_SubBranching()
         {
-            var words = _testSubject.Get("ST").ToList();
+            var words = _testSubject.Get("ST", caseSensitive: true).ToList();
+
+            Assert.AreEqual(3, words.Count);
+
+            foreach (var w in words)
+            {
+                Console.WriteLine(w);
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow("", 10, DisplayName = "Get all")]
+        [DataRow("str", 3, DisplayName = "Test 'str' string")]
+        [DataRow("s", 4, DisplayName = "Get all 's' words")]
+        [DataRow("S", 4, DisplayName = "Get all 'S' words")]
+        public void TestMatch(string input, int expected)
+        {
+            var words = _testSubject.Match(input, caseSensitive: true).ToList();
+            Assert.AreEqual(expected, words.Count);
+        }
+        
+        [TestMethod]
+        public void TestMatch_NoMatch()
+        {
+            var words = _testSubject.Match("st0", caseSensitive: true).ToList();
+
+            Assert.AreEqual(0, words.Count);
+        }
+
+        [TestMethod]
+        public void TestMatch_KeyPart()
+        {
+            var words = _testSubject.Match("de", caseSensitive: true).ToList();
+
+            Assert.AreEqual(1, words.Count, "Expected result 'def'");
+        }
+
+        [TestMethod]
+        public void TestMatch_KeyPart2()
+        {
+            var words = _testSubject.Match("stri", caseSensitive: true).ToList();
+
+            Assert.AreEqual(1, words.Count, "Expected result 'string'");
+        }
+
+        [TestMethod]
+        public void TestMatch_SubBranching()
+        {
+            var words = _testSubject.Match("ST", caseSensitive: true).ToList();
 
             Assert.AreEqual(3, words.Count);
 
@@ -100,7 +148,7 @@ namespace Algorithms.Tests
         {
             Assert.AreEqual(true, _testSubject.Remove("STRONG"));
 
-            var words = _testSubject.Get("ST").ToList();
+            var words = _testSubject.Match("ST", caseSensitive: true).ToList();
 
             Assert.AreEqual(2, words.Count);
         }
@@ -110,7 +158,7 @@ namespace Algorithms.Tests
         {
             Assert.AreEqual(true, _testSubject.Remove("STRONGEST"));
 
-            var words = _testSubject.Get("ST").ToList();
+            var words = _testSubject.Match("ST", caseSensitive: true).ToList();
 
             Assert.AreEqual(2, words.Count);
         }

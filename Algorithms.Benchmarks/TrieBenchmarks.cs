@@ -116,7 +116,7 @@ namespace Algorithms.Benchmarks
         [Benchmark(Baseline = true)]
         public void Load()
         {
-            var trie = new Trie(caseSensetive: true);
+            var trie = new Trie();
             foreach (var word in verbs)
             {
                 trie.Add(word);
@@ -126,35 +126,44 @@ namespace Algorithms.Benchmarks
         [Benchmark]
         public void Find()
         {
-            var trie = new Trie(caseSensetive: true);
+            var trie = new Trie();
             foreach (var word in verbs)
             {
                 trie.Add(word);
             }
 
-            trie.Get("STR");
-            trie.Get("co");
+            trie.Get("STR", caseSensitive: true);
+            trie.Get("co", caseSensitive: true);
         }
 
         [Benchmark]
-        public void Remove()
+        public void FindMatch()
         {
-            var trie = new Trie(caseSensetive: true);
+            var trie = new Trie();
             foreach (var word in verbs)
             {
                 trie.Add(word);
             }
 
-            trie.Remove("STRONG");
-            trie.Remove("expect");
-            trie.Remove("show");
-            trie.Remove("strange");
-            trie.Remove("serve");
-            trie.Remove("keep");
-            trie.Remove("would");
-            trie.Remove("be");
-            trie.Remove("continue");
-            trie.Remove("move");
+            trie.Match("STR", caseSensitive: true);
+            trie.Match("co", caseSensitive: true);
+        }
+
+        [Benchmark]
+        public bool RemoveAll()
+        {
+            var trie = new Trie();
+            foreach (var word in verbs)
+            {
+                trie.Add(word);
+            }
+
+            bool result = true;
+            foreach (var word in verbs)
+            {
+                result &= trie.Remove(word);
+            }
+            return result;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Algorithms.Extensions;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,19 +10,16 @@ namespace Algorithms.DataStructures
     public class Trie
     {
         private readonly Dictionary<char, TrieNode> _subTries = new Dictionary<char, TrieNode>();
-        private readonly bool _isCaseSensetive;
         private int _wordsCount = 0;
 
         public int WordsCount => _wordsCount;
 
-        public Trie(bool caseSensetive = false) => _isCaseSensetive = caseSensetive;
-
         public bool Add(string word)
         {
-            var firstChar = _isCaseSensetive ? word[0] : Char.ToUpper(word[0]);
+            var firstChar = word[0];
             if (!_subTries.ContainsKey(firstChar))
             {
-                _subTries.Add(firstChar, new TrieNode(word, _isCaseSensetive));
+                _subTries.Add(firstChar, new TrieNode(word));
                 _wordsCount++;
                 return true;
             }
@@ -34,35 +33,64 @@ namespace Algorithms.DataStructures
             _subTries.Clear();
         }
 
-        public IEnumerable<string> Get(string pattern)
+        public IEnumerable<string> Get(string pattern, bool caseSensitive)
         {
             if (string.IsNullOrEmpty(pattern))
             {
-                var result = new List<string>();
+                var allContent = new List<string>();
                 foreach (var n in _subTries.OrderBy(x => x.Key).Select(x => x.Value))
                 {
-                    result.AddRange(n.GetWords(pattern));
+                    allContent.AddRange(n.GetWords(pattern, caseSensitive));
                 }
-                return result;
+                return allContent;
             }
 
-            var key = _isCaseSensetive ? pattern[0] : Char.ToUpper(pattern[0]);
-            return _subTries[key].GetWords(pattern);
+            IEnumerable<string> result = null;
+            if (_subTries.TryGetValue(pattern[0], out TrieNode subTrie))
+            {
+                result = subTrie.GetWords(pattern, caseSensitive);
+            }
+
+            if (!caseSensitive)
+            {
+                char branchKey = Char.IsUpper(pattern[0]) ? Char.ToLower(pattern[0]) : Char.ToUpper(pattern[0]);
+                if (_subTries.TryGetValue(branchKey, out TrieNode branch))
+                {
+                    result = result is null ? branch.GetWords(pattern, caseSensitive) : result.Chain(branch.GetWords(pattern, caseSensitive));
+                }
+            }
+
+            return result ?? Enumerable.Empty<string>();
         }
 
-        public IEnumerable<string> Match(string pattern)
+        public IEnumerable<string> Match(string pattern, bool caseSensitive)
         {
-            //if (string.IsNullOrEmpty(pattern))
-            //{
-            //    var result = new List<string>();
-            //    foreach (var n in _subTries.OrderBy(x => x.Key).Select(x => x.Value))
-            //    {
-            //        result.AddRange(n.GetWords(pattern));
-            //    }
-            //    return result;
-            //}
-            var key = _isCaseSensetive ? pattern[0] : Char.ToUpper(pattern[0]);
-            return _subTries[key].GetMatches(pattern);
+            if (string.IsNullOrEmpty(pattern))
+            {
+                var allContent = new List<string>();
+                foreach (var n in _subTries.OrderBy(x => x.Key).Select(x => x.Value))
+                {
+                    allContent.AddRange(n.GetMatches(pattern, caseSensitive));
+                }
+                return allContent;
+            }
+
+            IEnumerable<string> result = null;
+            if (_subTries.TryGetValue(pattern[0], out TrieNode subTrie))
+            {
+                result = subTrie.GetMatches(pattern, caseSensitive);
+            }
+
+            if (!caseSensitive)
+            {
+                char branchKey = Char.IsUpper(pattern[0]) ? Char.ToLower(pattern[0]) : Char.ToUpper(pattern[0]);
+                if (_subTries.TryGetValue(branchKey, out TrieNode branch))
+                {
+                    result = result is null ? branch.GetMatches(pattern, caseSensitive) : result.Chain(branch.GetMatches(pattern, caseSensitive));
+                }
+            }
+
+            return result ?? Enumerable.Empty<string>();
         }
 
         public bool Remove(string word)
@@ -72,11 +100,17 @@ namespace Algorithms.DataStructures
                 throw new ArgumentNullException(nameof(word));
             }
 
-            var key = _isCaseSensetive ? word[0] : Char.ToUpper(word[0]);
+            var key = word[0];
             bool removeResult = false;
             if(_subTries.TryGetValue(key, out TrieNode node))
             {
                 removeResult = node.Remove(word);
+
+                if (node.IsEmptyNode())
+                {
+                    _subTries.Remove(key);
+                }
+
                 _wordsCount -= removeResult ? 1 : 0;
             }
             return removeResult;
@@ -86,31 +120,30 @@ namespace Algorithms.DataStructures
         {
             public bool IsFinal { get; private set; }
             public char Key { get; private set; }
-            public char CaseAwareKey { get; }
             public string Suffix { get; private set; }
             public bool HasSuffix => !string.IsNullOrEmpty(Suffix);
 
             private TrieNode _child;
             private Dictionary<char, TrieNode> _children;
 
-            private readonly bool _isCaseSensetive;
+            private TrieNode _parentNode;
 
-            public TrieNode(string suffix, bool caseSensetive)
+            public TrieNode(TrieNode parent, string suffix) 
             {
-                _isCaseSensetive = caseSensetive;
-                CaseAwareKey = _isCaseSensetive ? suffix[0] : Char.ToUpper(suffix[0]);
+                _parentNode = parent;
 
                 IsFinal = true;
                 Suffix = suffix;
                 Key = suffix[0];
+            }
+            public TrieNode(string suffix) : this(null, suffix)
+            {
             }
 
             public bool Add(string word, int index = 0)
             {
                 if (HasSuffix)
                 {
-                    //if(string.Compare(Key, word, !_isCaseSensetive) == 0) return false;
-
                     if (Suffix.Length > 1)
                     {
                         AppendWord(Suffix, 1); //key is not final anymore so it should be distributed further
@@ -131,6 +164,37 @@ namespace Algorithms.DataStructures
                 return AppendWord(word, index + 1);
             }
 
+            private bool AppendWord(string word, int index)
+            {
+                if (_child is null && _children is null) // first child being added. It might be the only one
+                {
+                    _child = new TrieNode(this, word.Substring(index));
+                    return true;
+                }
+
+                var key = word[index];
+                if (_child != null && _child.Key == key)
+                {
+                    return _child.Add(word, index);
+                }
+
+                if (_children is null) // second child added, use dictionary from now
+                {
+                    _children = new Dictionary<char, TrieNode>
+                    {
+                        { _child.Key, _child }
+                    };
+                    _child = null;
+                }
+
+                if (_children.TryGetValue(key, out TrieNode node))
+                {
+                    return node.Add(word, index);
+                }
+                _children.Add(key, new TrieNode(this, word.Substring(index)));
+                return true;
+            }
+
             private bool TryGetChild(char key, out TrieNode node)
             {
                 bool result = false;
@@ -138,7 +202,7 @@ namespace Algorithms.DataStructures
 
                 if (_child != null)
                 {
-                    node = _child.CaseAwareKey == key ? _child : null;
+                    node = _child.Key == key ? _child : null;
                     result = node != null;
                 }
                 else if (_children != null)
@@ -149,116 +213,107 @@ namespace Algorithms.DataStructures
                 return result;
             }
 
-            private bool RemoveChild(char key)
-            {
-                bool result = false;
-                if (_child != null && _child.CaseAwareKey == key)
-                {
-                    _child = null;
-                    result = true;
-                }
-                else if (_children != null)
-                {
-                    result = _children.Remove(key);
-                    if (_children.Count == 1)
-                    {
-                        _child = _children[_children.Keys.First()];
-                        _children.Clear();
-                        _children = null;
-                    }
-                }
-                return result;
-            }
-
-            private bool IsEmptyNode()
+            internal bool IsEmptyNode()
             {
                 return _child is null && (_children?.Count ?? 0) == 0;
             }
 
-            private bool AppendWord(string word, int index)
-            {
-                if (_child is null && _children is null) // first child being added. It might be the only one
-                {
-                    _child = new TrieNode(word.Substring(index), _isCaseSensetive);
-                    return true;
-                }
-
-                var key = _isCaseSensetive ? word[index] : Char.ToUpper(word[index]);
-                if (_child != null && _child.CaseAwareKey == key)
-                {
-                    return _child.Add(word, index);
-                }
-
-                if (_children is null) // second child added, use dictionary from now
-                {
-                    _children = new Dictionary<char, TrieNode>
-                    {
-                        { _child.CaseAwareKey, _child }
-                    };
-                    _child = null;
-                }
-
-                if (_children.TryGetValue(key, out TrieNode node))
-                {
-                    return node.Add(word, index);
-                }
-                _children.Add(key, new TrieNode(word.Substring(index), _isCaseSensetive));
-                return true;
-            }
-
-            public IEnumerable<string> GetMatches(string pattern)
+            public IEnumerable<string> GetMatches(string pattern, bool caseSensitive)
             {
                 var nodes = new Stack<(int patternIndex, TrieNode node)>();
                 var tails = new Stack<TrieNode>();
 
-                nodes.Push((1,this));
+                nodes.Push((0,this));
+                bool nodeAdded = false;
 
                 while (nodes.Count > 0) //patternIndex < pattern.Length && 
                 {
                     var (patternIndex, node) = nodes.Pop();
 
+                    patternIndex++;
+                    if (patternIndex >= pattern.Length)
+                    {
+                        tails.Push(node);
+                        continue;
+                    }
+
                     char key = pattern[patternIndex];
+                    nodeAdded = false;
 
                     if (node.TryGetChild(key, out TrieNode child))
                     {
-                        if (patternIndex + 1 < pattern.Length)
-                        {
-                            nodes.Push((patternIndex + 1, child));
-                        }
-                        else
-                        {
-                            tails.Push(child);
-                        }
+                        nodes.Push((patternIndex, child));
+                        nodeAdded = true;
                     }
 
-                    if (!_isCaseSensetive)
+                    if (!caseSensitive)
                     {
                         char branchKey = Char.IsUpper(key) ? Char.ToLower(key) : Char.ToUpper(key);
                         if (node.TryGetChild(branchKey, out TrieNode branchChild))
                         {
-                            if (patternIndex + 1 < pattern.Length)
-                            {
-                                nodes.Push((patternIndex + 1, branchChild));
-                            }
-                            else
-                            {
-                                tails.Push(branchChild);
-                            }
+                            nodes.Push((patternIndex, branchChild));
+                            nodeAdded = true;
                         }
+                    }
+
+                    if (!nodeAdded && node.IsFinal)
+                    {
+                        tails.Push(node);
                     }
                 }
 
                 if (tails.Count == 0)
                 {
-                    return Enumerable.Empty<string>();
+                    yield break;
                 }
 
+                while (tails.Count > 0)
+                {
+                    var node = tails.Pop();
+                    if (node.IsFinal)
+                    {
+                        yield return ComposeWord(node);
+                        if (node.IsEmptyNode())
+                        {
+                            continue;
+                        }
+                    }
 
-
-                return null;
+                    if (node._child != null)
+                    {
+                        tails.Push(node._child);
+                    }
+                    else
+                    {
+                        foreach (var key in node._children.Keys.OrderByDescending(k => k))
+                        {
+                            tails.Push(node._children[key]);
+                        }
+                    }
+                }
+                yield break;
             }
 
-            public IEnumerable<string> GetWords(string pattern)
+            private string ComposeWord(TrieNode node)
+            {
+                if (!node.IsFinal)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                StringBuilder result = new StringBuilder(node.Suffix);
+                TrieNode parent = node._parentNode;
+
+                while (parent != null)
+                {
+                    result.Insert(0, parent.Key);
+                    parent = parent._parentNode;
+                }
+
+                return result.ToString();
+            }
+
+            public IEnumerable<string> GetWords(string pattern, bool caseSensitive)
             {
                 var originalPatternLength = pattern.Length;
                 string result = string.Empty;
@@ -312,7 +367,7 @@ namespace Algorithms.DataStructures
                         continue;
                     }
 
-                    char key = _isCaseSensetive ? pattern[0] : Char.ToUpper(pattern[0]);
+                    char key = caseSensitive ? pattern[0] : Char.ToUpper(pattern[0]);
                     if (node.TryGetChild(key, out TrieNode child))
                     {
                         nodes.Push(child);
@@ -324,102 +379,114 @@ namespace Algorithms.DataStructures
 
             public bool Remove(string wordToRemove)
             {
-                var forward = new Stack<TrieNode>();
-
                 int patternIndex = 1;
                 char[] pattern = wordToRemove.ToCharArray();
-                if (!_isCaseSensetive)
-                {
-                    for (int i = 0; i < pattern.Length; i++)
-                    {
-                        pattern[i] = Char.ToUpper(pattern[i]);
-                    }
-                }
 
                 int resultIndex = 0;
                 var result = new char[wordToRemove.Length];
                 
-                TrieNode removeCandidate = null;
+                TrieNode currentNode = this;
                 bool wasRemoved = false;
+                bool needsCompacting = false;
 
-                forward.Push(this);
-
-                while (forward.Count > 0)
+                while (currentNode != null)
                 {
-                    var node = forward.Peek();
+                    int suffixLength = currentNode.HasSuffix ? currentNode.Suffix.Length : 1;
 
-                    if (resultIndex + (node.HasSuffix ? node.Suffix.Length : 1) > wordToRemove.Length)
+                    if (resultIndex + suffixLength > pattern.Length)
                     {
                         return false;
                     }
 
-                    if (node.HasSuffix)
+                    if (suffixLength > 1)
                     {
-                        for (int i = 0; i < node.Suffix.Length; i++)
+                        for (int i = 0; i < suffixLength; i++)
                         {
-                            result[resultIndex] = _isCaseSensetive ? node.Suffix[i] : Char.ToUpper(node.Suffix[i]);
+                            result[resultIndex] = currentNode.Suffix[i];
                             resultIndex++;
                         }
                     }
                     else
                     {
-                        result[resultIndex] = node.CaseAwareKey;
+                        result[resultIndex] = currentNode.Key;
                         resultIndex++;
                     }
 
-                    if (node.IsFinal && result.Length == wordToRemove.Length && Enumerable.SequenceEqual(pattern, result))
+                    if (currentNode.IsFinal && resultIndex == pattern.Length && Enumerable.SequenceEqual(pattern, result))
                     {
                         wasRemoved = true;
-                        node.IsFinal = false;
-                        if (IsEmptyNode())
+                        currentNode.IsFinal = false;
+                        if (currentNode.IsEmptyNode())
                         {
-                            removeCandidate = node;
+                            needsCompacting = true;
                         }
-
                         break;
                     }
 
-                    if (patternIndex >= wordToRemove.Length)
+                    if (patternIndex >= pattern.Length)
                     {
                         break;
                     }
 
-                    char key = _isCaseSensetive ? wordToRemove[patternIndex] : Char.ToUpper(wordToRemove[patternIndex]);
-                    if (!node.TryGetChild(key, out TrieNode child))
+                    char key = pattern[patternIndex];
+                    if (!currentNode.TryGetChild(key, out TrieNode childNode))
                     {
                         break;
                     }
 
-                    forward.Push(child);
+                    currentNode = childNode;
                     patternIndex++;
                 }
 
-                if (removeCandidate != null)
+                if (needsCompacting)
                 {
-                    forward.Pop(); // pop removed node
-                }
-
-                while (removeCandidate != null && forward.Count > 0)
-                {
-                    var node = forward.Pop();
-                    node.RemoveChild(removeCandidate.CaseAwareKey);
-                    
-                    if (!node.IsFinal && node.IsEmptyNode())
+                    char removeKey = currentNode.Key;
+                    var parentNode = currentNode._parentNode;
+                    while (parentNode != null)
                     {
-                        removeCandidate = node;
-                    }
-                    else
-                    {
-                        removeCandidate = null;
+                        bool removed = parentNode.RemoveChild(removeKey);
+                        if (removed)
+                        {
+                            removeKey = parentNode.Key;
+                            parentNode = parentNode._parentNode;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
-
                 return wasRemoved;
+            }
+
+            private bool RemoveChild(char key)
+            {
+                if (_child != null && _child.Key == key && _child.IsEmptyNode())
+                {
+                    _child._parentNode = null;
+                    _child = null;
+                    return true;
+                }
+
+                if (_children != null && _children.TryGetValue(key, out TrieNode child) && child.IsEmptyNode())
+                {
+                    child._parentNode = null;
+                    bool result = _children.Remove(key);
+                    if (_children.Count == 1)
+                    {
+                        _child = _children[_children.Keys.First()];
+                        _children.Clear();
+                        _children = null;
+                    }
+                    return result;
+                }
+
+                return false;
             }
 
             public override string ToString()
             {
-                return $"{this.Key} {(this.IsFinal ? " is Final" : string.Empty)}";
+                return $"{this.Key}{(this.IsFinal ? " is Final" : string.Empty)}";
             }
         }
     }
