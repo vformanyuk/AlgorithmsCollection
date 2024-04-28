@@ -294,14 +294,14 @@ namespace Algorithms.DataStructures
                 yield break;
             }
 
-            private string ComposeWord(TrieNode node)
+            private unsafe string ComposeWord(TrieNode node)
             {
                 if (!node.IsFinal)
                 {
                     throw new InvalidOperationException();
                 }
 
-                char[] word = new char[node._wordTotalLength];
+                char* word = stackalloc char[node._wordTotalLength];
                 int wordIndex = node._wordTotalLength - 1;
 
                 if (node.HasSuffix)
