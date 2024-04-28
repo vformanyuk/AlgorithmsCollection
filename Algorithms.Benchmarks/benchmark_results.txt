@@ -67,3 +67,12 @@ Match method with string builder
 | Find      |  5.081 us | 0.0129 us | 0.0120 us |  0.99 |    0.02 |  26.68 KB |        1.01 |
 | FindMatch |  4.931 us | 0.0275 us | 0.0257 us |  0.96 |    0.02 |  26.65 KB |        1.01 |
 | RemoveAll | 11.430 us | 0.0799 us | 0.0748 us |  2.22 |    0.04 |  36.46 KB |        1.38 |
+
+Keep original word length with every node and use char array instead of StringBuilder
+
+| Method    | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|---------- |----------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load      |  5.254 us | 0.1034 us | 0.1190 us |  1.00 |    0.00 |  26.49 KB |        1.00 |
+| Find      |  5.784 us | 0.0586 us | 0.0549 us |  1.11 |    0.02 |  26.68 KB |        1.01 |
+| FindMatch |  4.973 us | 0.0546 us | 0.0484 us |  0.95 |    0.03 |  26.65 KB |        1.01 |
+| RemoveAll | 11.852 us | 0.0489 us | 0.0457 us |  2.27 |    0.05 |  36.46 KB |        1.38 |

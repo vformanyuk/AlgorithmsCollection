@@ -1,9 +1,7 @@
 ﻿using Algorithms.Extensions;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Algorithms.DataStructures
 {
@@ -19,7 +17,7 @@ namespace Algorithms.DataStructures
             var firstChar = word[0];
             if (!_subTries.ContainsKey(firstChar))
             {
-                _subTries.Add(firstChar, new TrieNode(word));
+                _subTries.Add(firstChar, new TrieNode(word, word.Length));
                 _wordsCount++;
                 return true;
             }
@@ -123,20 +121,22 @@ namespace Algorithms.DataStructures
             public string Suffix { get; private set; }
             public bool HasSuffix => !string.IsNullOrEmpty(Suffix);
 
+            private int _wordTotalLength;
             private TrieNode _child;
             private Dictionary<char, TrieNode> _children;
 
             private TrieNode _parentNode;
 
-            public TrieNode(TrieNode parent, string suffix) 
+            public TrieNode(TrieNode parent, string suffix, int wordTotalLength) 
             {
                 _parentNode = parent;
+                _wordTotalLength = wordTotalLength;
 
                 IsFinal = true;
                 Suffix = suffix;
                 Key = suffix[0];
             }
-            public TrieNode(string suffix) : this(null, suffix)
+            public TrieNode(string suffix, int wordTotalLength) : this(null, suffix, wordTotalLength)
             {
             }
 
@@ -146,7 +146,7 @@ namespace Algorithms.DataStructures
                 {
                     if (Suffix.Length > 1)
                     {
-                        AppendWord(Suffix, 1); //key is not final anymore so it should be distributed further
+                        AppendWord(Suffix, 1, _wordTotalLength); //key is not final anymore so it should be distributed further
                         IsFinal = false;
                     }
                     Suffix = string.Empty;
@@ -161,14 +161,14 @@ namespace Algorithms.DataStructures
                     return wasFinal ^ IsFinal;
                 }
 
-                return AppendWord(word, index + 1);
+                return AppendWord(word, index + 1, word.Length);
             }
 
-            private bool AppendWord(string word, int index)
+            private bool AppendWord(string word, int index, int wordLength)
             {
                 if (_child is null && _children is null) // first child being added. It might be the only one
                 {
-                    _child = new TrieNode(this, word.Substring(index));
+                    _child = new TrieNode(this, word.Substring(index), wordLength);
                     return true;
                 }
 
@@ -191,7 +191,7 @@ namespace Algorithms.DataStructures
                 {
                     return node.Add(word, index);
                 }
-                _children.Add(key, new TrieNode(this, word.Substring(index)));
+                _children.Add(key, new TrieNode(this, word.Substring(index), wordLength));
                 return true;
             }
 
@@ -226,7 +226,7 @@ namespace Algorithms.DataStructures
                 nodes.Push((0,this));
                 bool nodeAdded = false;
 
-                while (nodes.Count > 0) //patternIndex < pattern.Length && 
+                while (nodes.Count > 0)
                 {
                     var (patternIndex, node) = nodes.Pop();
 
@@ -301,16 +301,31 @@ namespace Algorithms.DataStructures
                     throw new InvalidOperationException();
                 }
 
-                StringBuilder result = new StringBuilder(node.Suffix);
-                TrieNode parent = node._parentNode;
+                char[] word = new char[node._wordTotalLength];
+                int wordIndex = node._wordTotalLength - 1;
 
-                while (parent != null)
+                if (node.HasSuffix)
                 {
-                    result.Insert(0, parent.Key);
-                    parent = parent._parentNode;
+                    for (int i = node.Suffix.Length - 1; i >= 0; i--)
+                    {
+                        word[wordIndex] = node.Suffix[i];
+                        wordIndex--;
+                    }
+                }
+                else
+                {
+                    word[wordIndex] = node.Key;
+                    wordIndex--;
                 }
 
-                return result.ToString();
+                TrieNode parent = node._parentNode;
+                while (parent != null)
+                {
+                    word[wordIndex] = parent.Key;
+                    wordIndex--;
+                    parent = parent._parentNode;
+                }
+                return new string(word);
             }
 
             public IEnumerable<string> GetWords(string pattern, bool caseSensitive)
