@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Algorithms.DataStructures
 {
@@ -147,6 +148,7 @@ namespace Algorithms.DataStructures
                     if (Suffix.Length > 1)
                     {
                         AppendWord(Suffix, 1, _wordTotalLength); //key is not final anymore so it should be distributed further
+                        _wordTotalLength = 0;
                         IsFinal = false;
                     }
                     Suffix = string.Empty;
@@ -157,6 +159,7 @@ namespace Algorithms.DataStructures
                     Suffix = string.Empty;
                     bool wasFinal = IsFinal;
                     IsFinal = true;
+                    _wordTotalLength = word.Length;
 
                     return wasFinal ^ IsFinal;
                 }
@@ -294,14 +297,15 @@ namespace Algorithms.DataStructures
                 yield break;
             }
 
-            private unsafe string ComposeWord(TrieNode node)
+            private string ComposeWord(TrieNode node)
             {
                 if (!node.IsFinal)
                 {
                     throw new InvalidOperationException();
                 }
 
-                char* word = stackalloc char[node._wordTotalLength];
+                char[] word = new char[node._wordTotalLength];
+
                 int wordIndex = node._wordTotalLength - 1;
 
                 if (node.HasSuffix)
@@ -402,7 +406,6 @@ namespace Algorithms.DataStructures
                 
                 TrieNode currentNode = this;
                 bool wasRemoved = false;
-                bool needsCompacting = false;
 
                 while (currentNode != null)
                 {
@@ -431,10 +434,6 @@ namespace Algorithms.DataStructures
                     {
                         wasRemoved = true;
                         currentNode.IsFinal = false;
-                        if (currentNode.IsEmptyNode())
-                        {
-                            needsCompacting = true;
-                        }
                         break;
                     }
 
@@ -453,7 +452,7 @@ namespace Algorithms.DataStructures
                     patternIndex++;
                 }
 
-                if (needsCompacting)
+                if (wasRemoved && currentNode.IsEmptyNode())
                 {
                     char removeKey = currentNode.Key;
                     var parentNode = currentNode._parentNode;
@@ -470,20 +469,76 @@ namespace Algorithms.DataStructures
                             break;
                         }
                     }
+
+                    if (parentNode != null && parentNode._child != null && parentNode._child.IsEmptyNode())
+                    {
+                        TryCompact(parentNode._child);
+                    }
                 }
                 return wasRemoved;
             }
 
+            private void TryCompact(TrieNode compactingTail)
+            {
+                if (compactingTail._parentNode is null || compactingTail._parentNode.IsFinal)
+                {
+                    return;
+                }
+
+                char[] suffix = new char[compactingTail._wordTotalLength];
+                int suffixIdx = compactingTail._wordTotalLength - 1;
+
+                if (compactingTail.HasSuffix)
+                {
+                    for (int i = compactingTail.Suffix.Length - 1; i >= 0; i--)
+                    {
+                        suffix[suffixIdx] = compactingTail.Suffix[i];
+                        suffixIdx--;
+                    }
+                }
+                else
+                {
+                    suffix[suffixIdx] = compactingTail.Key;
+                    suffixIdx--;
+                }
+                compactingTail.IsFinal = false;
+
+                TrieNode previousNode = compactingTail;
+                TrieNode currentNode = compactingTail._parentNode;
+                while (currentNode != null && !currentNode.IsFinal)
+                {
+                    if (currentNode.RemoveChild(previousNode.Key))
+                    {
+                        suffix[suffixIdx] = currentNode.Key;
+                        suffixIdx--;
+
+                        previousNode = currentNode;
+                        currentNode = currentNode._parentNode;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (currentNode is null) // we reached the top level node
+                {
+                    currentNode = previousNode;
+                }
+
+                currentNode.Add(new string(suffix), suffixIdx + 1);
+            }
+
             private bool RemoveChild(char key)
             {
-                if (_child != null && _child.Key == key && _child.IsEmptyNode())
+                if (_child != null && _child.Key == key && !_child.IsFinal && _child.IsEmptyNode())
                 {
                     _child._parentNode = null;
                     _child = null;
                     return true;
                 }
 
-                if (_children != null && _children.TryGetValue(key, out TrieNode child) && child.IsEmptyNode())
+                if (_children != null && _children.TryGetValue(key, out TrieNode child) && !child.IsFinal && child.IsEmptyNode())
                 {
                     child._parentNode = null;
                     bool result = _children.Remove(key);

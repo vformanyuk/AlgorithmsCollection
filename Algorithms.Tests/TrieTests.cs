@@ -120,6 +120,7 @@ namespace Algorithms.Tests
             var words = _testSubject.Match("de", caseSensitive: true).ToList();
 
             Assert.AreEqual(1, words.Count, "Expected result 'def'");
+            Assert.AreEqual("def", words[0], "Expected result 'def'");
         }
 
         [TestMethod]
@@ -127,7 +128,8 @@ namespace Algorithms.Tests
         {
             var words = _testSubject.Match("stri", caseSensitive: true).ToList();
 
-            Assert.AreEqual(1, words.Count, "Expected result 'string'");
+            Assert.AreEqual(1, words.Count);
+            Assert.AreEqual("string", words[0], "Expected result 'string'");
         }
 
         [TestMethod]
@@ -137,10 +139,9 @@ namespace Algorithms.Tests
 
             Assert.AreEqual(3, words.Count);
 
-            foreach (var w in words)
-            {
-                Console.WriteLine(w);
-            }
+            Assert.AreEqual("STRONG", words[0]);
+            Assert.AreEqual("STRONGER", words[1]);
+            Assert.AreEqual("STRONGEST", words[2]);
         }
 
         [TestMethod]
@@ -151,6 +152,9 @@ namespace Algorithms.Tests
             var words = _testSubject.Match("ST", caseSensitive: true).ToList();
 
             Assert.AreEqual(2, words.Count);
+
+            Assert.AreEqual("STRONGER", words[0]);
+            Assert.AreEqual("STRONGEST", words[1]);
         }
 
         [TestMethod]
@@ -161,6 +165,33 @@ namespace Algorithms.Tests
             var words = _testSubject.Match("ST", caseSensitive: true).ToList();
 
             Assert.AreEqual(2, words.Count);
+
+            Assert.AreEqual("STRONG", words[0]);
+            Assert.AreEqual("STRONGER", words[1]);
+        }
+
+        [TestMethod]
+        public void TestRemove_LeftCommon()
+        {
+            Assert.AreEqual(true, _testSubject.Remove("STRONGER"));
+            Assert.AreEqual(true, _testSubject.Remove("STRONGEST"));
+
+            var words = _testSubject.Match("ST", caseSensitive: true).ToList();
+
+            Assert.AreEqual(1, words.Count);
+            Assert.AreEqual("STRONG", words[0]);
+        }
+
+        [TestMethod]
+        public void TestRemove_LeftCommon_NonFinal()
+        {
+            Assert.AreEqual(true, _testSubject.Remove("string"));
+            Assert.AreEqual(true, _testSubject.Remove("strange"));
+
+            var words = _testSubject.Match("st", caseSensitive: true).ToList();
+
+            Assert.AreEqual(1, words.Count);
+            Assert.AreEqual("str", words[0]);
         }
 
         [TestMethod]

@@ -85,3 +85,21 @@ Allocate memory for result word composition on stack
 | Find      |  5.170 us | 0.0305 us | 0.0286 us |  0.72 |    0.01 |  26.68 KB |        1.01 |
 | FindMatch |  4.995 us | 0.0484 us | 0.0404 us |  0.70 |    0.01 |  26.65 KB |        1.01 |
 | RemoveAll | 11.617 us | 0.0879 us | 0.0823 us |  1.63 |    0.03 |  36.46 KB |        1.38 |
+
+Tree compression after remove
+
+| Method    | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|---------- |----------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load      |  6.137 us | 0.1196 us | 0.1280 us |  1.00 |    0.00 |  26.49 KB |        1.00 |
+| Find      |  5.328 us | 0.0269 us | 0.0252 us |  0.87 |    0.02 |  26.68 KB |        1.01 |
+| FindMatch |  5.664 us | 0.0290 us | 0.0257 us |  0.92 |    0.02 |  26.65 KB |        1.01 |
+| RemoveAll | 11.943 us | 0.0716 us | 0.0670 us |  1.94 |    0.04 |  36.46 KB |        1.38 |
+
+Avoid using unsafe code, because it was producing strange results
+
+| Method    | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|---------- |----------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load      |  5.610 us | 0.1068 us | 0.1230 us |  1.00 |    0.00 |  26.49 KB |        1.00 |
+| Find      |  7.001 us | 0.0448 us | 0.0397 us |  1.26 |    0.03 |  26.68 KB |        1.01 |
+| FindMatch |  5.521 us | 0.0501 us | 0.0468 us |  0.99 |    0.02 |  26.65 KB |        1.01 |
+| RemoveAll | 11.695 us | 0.0591 us | 0.0553 us |  2.10 |    0.05 |  36.46 KB |        1.38 |
