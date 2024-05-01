@@ -7,10 +7,12 @@ namespace Algorithms.Benchmarks
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<TrieBenchmarks>();
+            //BenchmarkRunner.Run<SuffixTreeBenchmarks>();
+            BenchmarkRunner.Run<SuffixTreeMergeBenchmarks>();
 
-            //var benchmarks = new TrieBenchmarks();
-            //benchmarks.RemoveAll();
+
+            //var benchmarks = new SuffixTreeMergeBenchmarks();
+            //benchmarks.CreateMerge();
         }
     }
 }

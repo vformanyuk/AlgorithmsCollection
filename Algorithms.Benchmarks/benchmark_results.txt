@@ -103,3 +103,15 @@ Avoid using unsafe code, because it was producing strange results
 | Find      |  7.001 us | 0.0448 us | 0.0397 us |  1.26 |    0.03 |  26.68 KB |        1.01 |
 | FindMatch |  5.521 us | 0.0501 us | 0.0468 us |  0.99 |    0.02 |  26.65 KB |        1.01 |
 | RemoveAll | 11.695 us | 0.0591 us | 0.0553 us |  2.10 |    0.05 |  36.46 KB |        1.38 |
+
+---------------------------------------------------------------------------------------------------------------------------------------
+
+Merge. Using two arrays of 100 words each for benchmarking
+
+| Method        | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
+|-------------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Add           | 11.34 us | 0.223 us | 0.266 us |  1.00 |    0.00 |   50.7 KB |        1.00 |
+| CreateNoMerge | 10.40 us | 0.022 us | 0.021 us |  0.92 |    0.02 |  52.65 KB |        1.04 |
+| CreateMerge   | 19.31 us | 0.094 us | 0.088 us |  1.70 |    0.04 |  84.79 KB |        1.67 |
+| FindInMerged  | 24.25 us | 0.132 us | 0.117 us |  2.14 |    0.05 |  90.56 KB |        1.79 |
+| Find_Parallel | 15.73 us | 0.096 us | 0.090 us |  1.39 |    0.04 |  60.66 KB |        1.20 | <- floating 16 - 21 depending on run

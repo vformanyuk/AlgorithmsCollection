@@ -2,20 +2,20 @@ using Algorithms.DataStructures;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using System;
 using System.Linq;
 
 namespace Algorithms.Tests
 {
     [TestClass]
-    public class TrieTests
+    public class SuffixTreeSyntheticDataTests
     {
-        private Trie _testSubject;
+        private SuffixTree _testSubject;
+        private SuffixTree _mergeTree;
 
         [TestInitialize]
         public void Setup()
         {
-            _testSubject = new Trie();
+            _testSubject = new SuffixTree();
 
             _testSubject.Add("string");
             _testSubject.Add("strange");
@@ -27,6 +27,28 @@ namespace Algorithms.Tests
             _testSubject.Add("sword");
             _testSubject.Add("def");
             _testSubject.Add(" random");
+
+            _mergeTree = new SuffixTree();
+            _mergeTree.Add("believe");
+            _mergeTree.Add("hold");
+            _mergeTree.Add("bring");
+            _mergeTree.Add("happen");
+            _mergeTree.Add("must");
+            _mergeTree.Add("write");
+            _mergeTree.Add("provide");
+            _mergeTree.Add("sit");
+            _mergeTree.Add("stand");
+            _mergeTree.Add("lose");
+            _mergeTree.Add("STRONG");
+            _mergeTree.Add("meet");
+            _mergeTree.Add("include");
+            _mergeTree.Add("continue");
+            _mergeTree.Add("set");
+            _mergeTree.Add("learn");
+            _mergeTree.Add("change");
+            _mergeTree.Add("lead");
+            _mergeTree.Add("understand");
+            _mergeTree.Add("sword");
         }
 
         [TestCleanup]
@@ -40,59 +62,6 @@ namespace Algorithms.Tests
         public void TestAdd()
         {
             Assert.AreEqual(10, _testSubject.WordsCount);
-        }
-
-        [DataTestMethod]
-        [DataRow("", 10, DisplayName = "Get all")]
-        [DataRow("str", 3, DisplayName = "Test 'str' string")]
-        [DataRow("s", 4, DisplayName = "Get all 's' words")]
-        [DataRow("S", 4, DisplayName = "Get all 'S' words")]
-        public void TestGet(string input, int expected)
-        {
-            var words = _testSubject.Get(input, caseSensitive: true).ToList();
-            Assert.AreEqual(expected, words.Count);
-
-            foreach (var w in words)
-            {
-                Console.WriteLine(w);
-            }
-        }
-        
-        [TestMethod]
-        public void TestGet_NoMatch()
-        {
-            var words = _testSubject.Get("st0", caseSensitive: true).ToList();
-
-            Assert.AreEqual(0, words.Count);
-        }
-        
-        [TestMethod]
-        public void TestGet_KeyPart()
-        {
-            var words = _testSubject.Get("de", caseSensitive: true).ToList();
-
-            Assert.AreEqual(1, words.Count, "Expected result 'def'");
-        }
-
-        [TestMethod]
-        public void TestGet_KeyPart2()
-        {
-            var words = _testSubject.Get("stri", caseSensitive: true).ToList();
-
-            Assert.AreEqual(1, words.Count, "Expected result 'string'");
-        }
-
-        [TestMethod]
-        public void TestGet_SubBranching()
-        {
-            var words = _testSubject.Get("ST", caseSensitive: true).ToList();
-
-            Assert.AreEqual(3, words.Count);
-
-            foreach (var w in words)
-            {
-                Console.WriteLine(w);
-            }
         }
 
         [DataTestMethod]
@@ -204,6 +173,22 @@ namespace Algorithms.Tests
         public void TestRemove_PartialyExistingNode()
         {
             Assert.AreEqual(false, _testSubject.Remove("swo"));
+        }
+
+        [TestMethod]
+        public void TestMerge_ValidateCount()
+        {
+            _testSubject.Merge(_mergeTree);
+            Assert.AreEqual(28, _testSubject.WordsCount);
+        }
+
+        [TestMethod]
+        public void TestMerge_GetMergedWords()
+        {
+            _testSubject.Merge(_mergeTree);
+            var data = _testSubject.Match("s", true).ToList();
+
+            Assert.AreEqual(7, data.Count);
         }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace Algorithms.Extensions
 {
-    public static class EnumerableExtensions
+    internal static class EnumerableExtensions
     {
-        public static IEnumerable<T> Chain<T>(this IEnumerable<T> self, params IEnumerable<T>[] others)
+        internal static IEnumerable<T> Chain<T>(this IEnumerable<T> self, params IEnumerable<T>[] others)
         {
             foreach(T item in self)
             {
@@ -20,6 +20,11 @@ namespace Algorithms.Extensions
             }
 
             yield break;
+        }
+
+        internal static IEnumerable<T> AsEnumerable<T>(this T self)
+        {
+            yield return self;
         }
     }
 }

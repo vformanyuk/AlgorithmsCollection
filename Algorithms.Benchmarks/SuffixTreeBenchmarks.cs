@@ -4,7 +4,7 @@ using BenchmarkDotNet.Attributes;
 namespace Algorithms.Benchmarks
 {
     [MemoryDiagnoser(false)]
-    public class TrieBenchmarks
+    public class SuffixTreeBenchmarks
     {
         private string[] verbs = [
                 "be",
@@ -116,52 +116,39 @@ namespace Algorithms.Benchmarks
         [Benchmark(Baseline = true)]
         public void Load()
         {
-            var trie = new Trie();
+            var SuffixTree = new SuffixTree();
             foreach (var word in verbs)
             {
-                trie.Add(word);
+                SuffixTree.Add(word);
             }
-        }
-
-        [Benchmark]
-        public void Find()
-        {
-            var trie = new Trie();
-            foreach (var word in verbs)
-            {
-                trie.Add(word);
-            }
-
-            trie.Get("STR", caseSensitive: true);
-            trie.Get("co", caseSensitive: true);
         }
 
         [Benchmark]
         public void FindMatch()
         {
-            var trie = new Trie();
+            var SuffixTree = new SuffixTree();
             foreach (var word in verbs)
             {
-                trie.Add(word);
+                SuffixTree.Add(word);
             }
 
-            trie.Match("STR", caseSensitive: true);
-            trie.Match("co", caseSensitive: true);
+            SuffixTree.Match("STR", caseSensitive: true);
+            SuffixTree.Match("co", caseSensitive: true);
         }
 
         [Benchmark]
         public bool RemoveAll()
         {
-            var trie = new Trie();
+            var SuffixTree = new SuffixTree();
             foreach (var word in verbs)
             {
-                trie.Add(word);
+                SuffixTree.Add(word);
             }
 
             bool result = true;
             foreach (var word in verbs)
             {
-                result &= trie.Remove(word);
+                result &= SuffixTree.Remove(word);
             }
             return result;
         }

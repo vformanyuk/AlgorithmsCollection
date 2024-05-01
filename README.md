@@ -19,5 +19,5 @@ In future new implementaions would be added here.
 ## Graphs
   * TODO
 ## Data Structures
-  * [Trie](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/DataStructures/Trie.cs)
+  * [Suffix Tree](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/DataStructures/SuffixTree.cs)
   * [Sum Tree](https://github.com/vformanyuk/AlgorithmsCollection/blob/master/Algorithms/DataStructures/SumTree.cs)
