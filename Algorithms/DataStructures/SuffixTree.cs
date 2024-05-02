@@ -91,18 +91,18 @@ namespace Algorithms.DataStructures
                 if (_subSuffixTrees.TryGetValue(node.Key, out SuffixTreeNode subNode))
                 {
                     _wordsCount += subNode.Merge(node.Value);
+                    SuffixTreeNode.VisitFinalWords(subNode, n => SuffixTreeNode.Compact(n));
                 }
                 else
                 {
-                    _subSuffixTrees.Add(node.Key, node.Value);
-                    _wordsCount += SuffixTreeNode.CountFinalWords(node.Value);
+                    var clone = (SuffixTreeNode)node.Value.Clone();
+                    _subSuffixTrees.Add(node.Key, clone);
+                    SuffixTreeNode.VisitFinalWords(clone, _ => _wordsCount++);
                 }
             }
-
-            merge._subSuffixTrees.Clear();
         }
 
-        private class SuffixTreeNode
+        private class SuffixTreeNode : ICloneable
         {
             public bool IsFinal { get; private set; }
             public char Key { get; private set; }
@@ -127,10 +127,12 @@ namespace Algorithms.DataStructures
             public SuffixTreeNode(string suffix, int wordTotalLength) : this(null, suffix, wordTotalLength)
             {
             }
+            private SuffixTreeNode() { }
 
             public int Merge(SuffixTreeNode node)
             {
                 int mergedWords = 0;
+                void increseMergedCounter(SuffixTreeNode _) => mergedWords++;
 
                 if (node.IsFinal)
                 {
@@ -166,7 +168,7 @@ namespace Algorithms.DataStructures
                 {
                     if (IsEmptyNode())
                     {
-                        _child = mergeChild;
+                        _child = (SuffixTreeNode)mergeChild.Clone();
                         _child._parentNode = this;
                         mergedWords++;
                         continue;
@@ -180,14 +182,15 @@ namespace Algorithms.DataStructures
                         }
                         else
                         {
-                            mergeChild._parentNode = this;
+                            var clone = (SuffixTreeNode)mergeChild.Clone();
+                            clone._parentNode = this;
                             _children = new Dictionary<char, SuffixTreeNode>()
                             {
                                 { _child.Key, _child },
-                                { mergeChild.Key, mergeChild }
+                                { clone.Key, clone }
                             };
                             _child = null;
-                            mergedWords += CountFinalWords(mergeChild);
+                            VisitFinalWords(clone, increseMergedCounter);
                         }
                         continue;
                     }
@@ -198,19 +201,18 @@ namespace Algorithms.DataStructures
                     }
                     else
                     {
-                        mergeChild._parentNode = this;
-                        _children.Add(mergeChild.Key, mergeChild);
-                        mergedWords += CountFinalWords(mergeChild);
+                        var clone = (SuffixTreeNode)mergeChild.Clone();
+                        clone._parentNode = this;
+                        _children.Add(clone.Key, clone);
+                        VisitFinalWords(clone, increseMergedCounter);
                     }
                 }
 
                 return mergedWords;
             }
 
-            public static int CountFinalWords(SuffixTreeNode rootNode)
+            public static void VisitFinalWords(SuffixTreeNode rootNode, Action<SuffixTreeNode> onFinalVisited)
             {
-                int result = 0;
-
                 Stack<SuffixTreeNode> subNodes = new Stack<SuffixTreeNode>();
                 subNodes.Push(rootNode);
 
@@ -219,7 +221,7 @@ namespace Algorithms.DataStructures
                     var node = subNodes.Pop();
                     if (node.IsFinal)
                     {
-                        result++;
+                        onFinalVisited(node);
                     }
 
                     if (node.IsEmptyNode())
@@ -239,8 +241,6 @@ namespace Algorithms.DataStructures
                         }
                     }
                 }
-
-                return result;
             }
 
             public bool Add(string word, int wordTotalLength, int index)
@@ -249,7 +249,7 @@ namespace Algorithms.DataStructures
                 {
                     if (Suffix.Length > 1)
                     {
-                        AppendWord(Suffix, 1, _wordTotalLength); //key is not final anymore so it should be distributed further
+                        AppendWord(Suffix, _wordTotalLength, 1); //key is not final anymore so it should be distributed further
                         _wordTotalLength = 0;
                         IsFinal = false;
                     }
@@ -266,10 +266,10 @@ namespace Algorithms.DataStructures
                     return wasFinal ^ IsFinal;
                 }
 
-                return AppendWord(word, index + 1, wordTotalLength);
+                return AppendWord(word, wordTotalLength, index + 1);
             }
 
-            private bool AppendWord(string word, int index, int wordTotalLength)
+            private bool AppendWord(string word, int wordTotalLength, int index)
             {
                 if (_child is null && _children is null) // first child being added. It might be the only one
                 {
@@ -526,9 +526,12 @@ namespace Algorithms.DataStructures
                 return wasRemoved;
             }
 
-            private void Compact(SuffixTreeNode compactingTail)
+            public static void Compact(SuffixTreeNode compactingTail)
             {
-                if (compactingTail._parentNode is null || compactingTail._parentNode.IsFinal)
+                if (!compactingTail.IsEmptyNode() ||
+                    compactingTail._parentNode is null ||
+                    compactingTail._parentNode.IsFinal ||
+                    compactingTail._parentNode._children != null)
                 {
                     return;
                 }
@@ -553,39 +556,33 @@ namespace Algorithms.DataStructures
 
                 SuffixTreeNode previousNode = compactingTail;
                 SuffixTreeNode currentNode = compactingTail._parentNode;
-                while (currentNode != null && !currentNode.IsFinal)
+                while (currentNode != null && currentNode.RemoveChild(previousNode.Key))
                 {
-                    if (currentNode.RemoveChild(previousNode.Key))
+                    if (currentNode.HasSuffix)
                     {
-                        if (currentNode.HasSuffix)
+                        for (int i = currentNode.Suffix.Length - 1; i >= 0; i--)
                         {
-                            for (int i = currentNode.Suffix.Length - 1; i >= 0; i--)
-                            {
-                                suffix[suffixIdx] = currentNode.Suffix[i];
-                                suffixIdx--;
-                            }
-                        }
-                        else
-                        {
-                            suffix[suffixIdx] = currentNode.Key;
+                            suffix[suffixIdx] = currentNode.Suffix[i];
                             suffixIdx--;
                         }
-
-                        previousNode = currentNode;
-                        currentNode = currentNode._parentNode;
                     }
                     else
                     {
-                        break;
+                        suffix[suffixIdx] = currentNode.Key;
+                        suffixIdx--;
                     }
+
+                    previousNode = currentNode;
+                    currentNode = currentNode._parentNode;
                 }
 
                 if (currentNode is null) // we reached the top level node
                 {
                     currentNode = previousNode;
+                    suffixIdx++;
                 }
 
-                currentNode.Add(new string(suffix), compactingTail._wordTotalLength, suffixIdx + 1);
+                currentNode.Add(new string(suffix), compactingTail._wordTotalLength, suffixIdx);
             }
 
             private bool RemoveChild(char key)
@@ -616,6 +613,33 @@ namespace Algorithms.DataStructures
             public override string ToString()
             {
                 return $"{this.Key}{(this.IsFinal ? " is Final" : string.Empty)}";
+            }
+
+            public object Clone()
+            {
+                var node = new SuffixTreeNode
+                {
+                    IsFinal = IsFinal,
+                    Suffix = Suffix,
+                    Key = Key,
+                };
+                node._wordTotalLength = _wordTotalLength;
+
+                if (_child != null)
+                {
+                    node._child = (SuffixTreeNode)_child.Clone();
+                }
+                else if (_children != null)
+                {
+                    node._children = new Dictionary<char, SuffixTreeNode>();
+                    foreach (var child in _children.Values)
+                    {
+                        var clone = (SuffixTreeNode)child.Clone();
+                        node._children[clone.Key] = clone;
+                    }
+                }
+
+                return node;
             }
         }
     }

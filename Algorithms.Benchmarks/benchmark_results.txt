@@ -115,3 +115,13 @@ Merge. Using two arrays of 100 words each for benchmarking
 | CreateMerge   | 19.31 us | 0.094 us | 0.088 us |  1.70 |    0.04 |  84.79 KB |        1.67 |
 | FindInMerged  | 24.25 us | 0.132 us | 0.117 us |  2.14 |    0.05 |  90.56 KB |        1.79 |
 | Find_Parallel | 15.73 us | 0.096 us | 0.090 us |  1.39 |    0.04 |  60.66 KB |        1.20 | <- floating 16 - 21 depending on run
+
+Clone nodes instead of stealing from merging tree. Compact after merge
+
+| Method        | Mean     | Error    | StdDev   | Ratio | RatioSD | Allocated | Alloc Ratio |
+|-------------- |---------:|---------:|---------:|------:|--------:|----------:|------------:|
+| Add           | 11.49 us | 0.096 us | 0.080 us |  1.00 |    0.00 |   50.7 KB |        1.00 |
+| CreateNoMerge | 10.10 us | 0.202 us | 0.270 us |  0.87 |    0.03 |  52.65 KB |        1.04 |
+| CreateMerge   | 25.27 us | 0.222 us | 0.185 us |  2.20 |    0.02 | 102.48 KB |        2.02 |
+| FindInMerged  | 29.43 us | 0.135 us | 0.126 us |  2.56 |    0.02 | 108.25 KB |        2.14 |
+| Find_Parallel | 16.22 us | 0.203 us | 0.190 us |  1.41 |    0.02 |  60.59 KB |        1.20 |
