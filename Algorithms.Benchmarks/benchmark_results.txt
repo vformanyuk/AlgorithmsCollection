@@ -138,9 +138,10 @@ Store entire word in final nodes. Don't compose words on search and remove
 
 | Method           | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
 |----------------- |----------:|----------:|----------:|------:|--------:|----------:|------------:|
-| Add              | 10.309 us | 0.1567 us | 0.1466 us |  1.00 |    0.00 |     42 KB |        1.00 |
-| CreateNoMerge    |  9.165 us | 0.0414 us | 0.0367 us |  0.89 |    0.01 |  44.43 KB |        1.06 |
-| CreateMerge      | 25.537 us | 0.0753 us | 0.0668 us |  2.48 |    0.04 |  92.75 KB |        2.21 |
-| FindInMerged     | 25.262 us | 0.0888 us | 0.0831 us |  2.45 |    0.04 |  97.04 KB |        2.31 |
-| Find_Parallel_2  | 12.874 us | 0.0982 us | 0.0918 us |  1.25 |    0.02 |  50.96 KB |        1.21 |
-| Find_Parallel_10 | 18.422 us | 0.2459 us | 0.2180 us |  1.79 |    0.03 |  68.84 KB |        1.64 |
+| Add              |  9.592 us | 0.1499 us | 0.1403 us |  1.00 |    0.00 |     42 KB |        1.00 |
+| CreateNoMerge    |  8.982 us | 0.1044 us | 0.0925 us |  0.94 |    0.02 |  44.43 KB |        1.06 |
+| CreateMerge      | 23.993 us | 0.1118 us | 0.1045 us |  2.50 |    0.04 |  92.75 KB |        2.21 |
+| FindInMerged     | 25.491 us | 0.0458 us | 0.0406 us |  2.66 |    0.04 |  97.04 KB |        2.31 |
+| FindInAdded      | 11.630 us | 0.0248 us | 0.0220 us |  1.21 |    0.02 |  46.29 KB |        1.10 |
+| Find_Parallel_2  | 13.112 us | 0.0904 us | 0.0845 us |  1.37 |    0.02 |  50.99 KB |        1.21 |
+| Find_Parallel_10 | 17.957 us | 0.2441 us | 0.2283 us |  1.87 |    0.04 |  68.85 KB |        1.64 |
