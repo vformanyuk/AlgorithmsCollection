@@ -104,6 +104,14 @@ Avoid using unsafe code, because it was producing strange results
 | FindMatch |  5.521 us | 0.0501 us | 0.0468 us |  0.99 |    0.02 |  26.65 KB |        1.01 |
 | RemoveAll | 11.695 us | 0.0591 us | 0.0553 us |  2.10 |    0.05 |  36.46 KB |        1.38 |
 
+Store entire word in final nodes. Don't compose words on search and remove
+
+| Method    | Mean     | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|---------- |---------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load      | 4.981 us | 0.0703 us | 0.0658 us |  1.00 |    0.00 |  22.43 KB |        1.00 |
+| FindMatch | 4.702 us | 0.0613 us | 0.0573 us |  0.94 |    0.02 |  22.66 KB |        1.01 |
+| RemoveAll | 9.122 us | 0.0254 us | 0.0212 us |  1.83 |    0.03 |  25.18 KB |        1.12 |
+
 ---------------------------------------------------------------------------------------------------------------------------------------
 
 Merge. Using two arrays of 100 words each for benchmarking
@@ -125,3 +133,14 @@ Clone nodes instead of stealing from merging tree. Compact after merge
 | CreateMerge   | 25.27 us | 0.222 us | 0.185 us |  2.20 |    0.02 | 102.48 KB |        2.02 |
 | FindInMerged  | 29.43 us | 0.135 us | 0.126 us |  2.56 |    0.02 | 108.25 KB |        2.14 |
 | Find_Parallel | 16.22 us | 0.203 us | 0.190 us |  1.41 |    0.02 |  60.59 KB |        1.20 |
+
+Store entire word in final nodes. Don't compose words on search and remove
+
+| Method           | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|----------------- |----------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Add              | 10.309 us | 0.1567 us | 0.1466 us |  1.00 |    0.00 |     42 KB |        1.00 |
+| CreateNoMerge    |  9.165 us | 0.0414 us | 0.0367 us |  0.89 |    0.01 |  44.43 KB |        1.06 |
+| CreateMerge      | 25.537 us | 0.0753 us | 0.0668 us |  2.48 |    0.04 |  92.75 KB |        2.21 |
+| FindInMerged     | 25.262 us | 0.0888 us | 0.0831 us |  2.45 |    0.04 |  97.04 KB |        2.31 |
+| Find_Parallel_2  | 12.874 us | 0.0982 us | 0.0918 us |  1.25 |    0.02 |  50.96 KB |        1.21 |
+| Find_Parallel_10 | 18.422 us | 0.2459 us | 0.2180 us |  1.79 |    0.03 |  68.84 KB |        1.64 |

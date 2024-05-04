@@ -302,7 +302,28 @@ namespace Algorithms.Benchmarks
         }
 
         [Benchmark]
-        public void Find_Parallel()
+        public void FindInAdded()
+        {
+            var source = new SuffixTree();
+            foreach (var word in verbs)
+            {
+                source.Add(word);
+            }
+
+            foreach (var word in commonWords)
+            {
+                source.Add(word);
+            }
+
+            var resultContainer = new ConcurrentBag<string>();
+            foreach (var word in source.Match("s", true))
+            {
+                resultContainer.Add(word);
+            }
+        }
+
+        [Benchmark]
+        public void Find_Parallel_2()
         {
             var source = new SuffixTree();
             foreach (var word in verbs)
@@ -320,6 +341,34 @@ namespace Algorithms.Benchmarks
 
             var resultContainer = new ConcurrentBag<string>();
             SuffixTree[] trees = [source, merge];
+            Parallel.ForEach(trees, t =>
+            {
+                foreach (var word in t.Match("s", true))
+                {
+                    resultContainer.Add(word);
+                }
+            });
+        }
+
+        [Benchmark]
+        public void Find_Parallel_10()
+        {
+            var source = new SuffixTree();
+            foreach (var word in verbs)
+            {
+                source.Add(word);
+            }
+
+            var merge = new SuffixTree();
+            foreach (var word in commonWords)
+            {
+                merge.Add(word);
+            }
+
+            //source.Merge(merge);
+
+            var resultContainer = new ConcurrentBag<string>();
+            SuffixTree[] trees = [source, merge, source, merge, source, merge, source, merge, source, merge];
             Parallel.ForEach(trees, t =>
             {
                 foreach (var word in t.Match("s", true))

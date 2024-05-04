@@ -17,11 +17,11 @@ namespace Algorithms.DataStructures
             var firstChar = word[0];
             if (!_subSuffixTrees.ContainsKey(firstChar))
             {
-                _subSuffixTrees.Add(firstChar, new SuffixTreeNode(word, word.Length));
+                _subSuffixTrees.Add(firstChar, new SuffixTreeNode(word));
                 _wordsCount++;
                 return true;
             }
-            bool addResult = _subSuffixTrees[firstChar].Add(word, word.Length, 0);
+            bool addResult = _subSuffixTrees[firstChar].Add(word, 0);
             _wordsCount += addResult ? 1 : 0;
             return addResult;
         }
@@ -35,12 +35,9 @@ namespace Algorithms.DataStructures
         {
             if (string.IsNullOrEmpty(pattern))
             {
-                var allContent = new List<string>();
-                foreach (var key in _subSuffixTrees.Keys.OrderBy(x => char.ToUpperInvariant(x)))
-                {
-                    allContent.AddRange(_subSuffixTrees[key].GetMatches(pattern, caseSensitive));
-                }
-                return allContent;
+                return _subSuffixTrees.Keys.OrderBy(key => char.ToUpperInvariant(key))
+                                           .Select(key => _subSuffixTrees[key].GetMatches(pattern, caseSensitive))
+                                           .SelectMany(x => x);
             }
 
             IEnumerable<string> result = null;
@@ -109,22 +106,23 @@ namespace Algorithms.DataStructures
             public string Suffix { get; private set; }
             public bool HasSuffix => (Suffix?.Length ?? 0) > 1;
 
-            private int _wordTotalLength;
+            private int _keyIndex;
+
             private SuffixTreeNode _child;
             private Dictionary<char, SuffixTreeNode> _children;
 
             private SuffixTreeNode _parentNode;
 
-            public SuffixTreeNode(SuffixTreeNode parent, string suffix, int wordTotalLength) 
+            public SuffixTreeNode(SuffixTreeNode parent, string suffix) 
             {
                 _parentNode = parent;
-                _wordTotalLength = wordTotalLength;
+                _keyIndex = parent is null ? 0 : parent._keyIndex + 1;
 
                 IsFinal = true;
                 Suffix = suffix;
-                Key = suffix[0];
+                Key = suffix[_keyIndex];
             }
-            public SuffixTreeNode(string suffix, int wordTotalLength) : this(null, suffix, wordTotalLength)
+            public SuffixTreeNode(string suffix) : this(null, suffix)
             {
             }
             private SuffixTreeNode() { }
@@ -134,19 +132,10 @@ namespace Algorithms.DataStructures
                 int mergedWords = 0;
                 void increseMergedCounter(SuffixTreeNode _) => mergedWords++;
 
-                if (node.IsFinal)
+                if (node.HasSuffix)
                 {
-                    if (node.HasSuffix)
-                    {
-                        bool added = Add(node.Suffix, node._wordTotalLength, 0);
-                        mergedWords += (added ? 1 : 0);
-                    }
-                    else
-                    {
-                        bool wasFinal = IsFinal;
-                        IsFinal = true;
-                        mergedWords += (wasFinal ^ IsFinal ? 1 : 0);
-                    }
+                    bool added = Add(node.Suffix, node._keyIndex);
+                    mergedWords += (added ? 1 : 0);
                 }
 
                 if (node.IsEmptyNode())
@@ -170,6 +159,7 @@ namespace Algorithms.DataStructures
                     {
                         _child = (SuffixTreeNode)mergeChild.Clone();
                         _child._parentNode = this;
+                        _child._keyIndex = this._keyIndex + 1;
                         mergedWords++;
                         continue;
                     }
@@ -184,6 +174,7 @@ namespace Algorithms.DataStructures
                         {
                             var clone = (SuffixTreeNode)mergeChild.Clone();
                             clone._parentNode = this;
+                            clone._keyIndex = this._keyIndex + 1;
                             _children = new Dictionary<char, SuffixTreeNode>()
                             {
                                 { _child.Key, _child },
@@ -203,6 +194,7 @@ namespace Algorithms.DataStructures
                     {
                         var clone = (SuffixTreeNode)mergeChild.Clone();
                         clone._parentNode = this;
+                        clone._keyIndex = this._keyIndex + 1;
                         _children.Add(clone.Key, clone);
                         VisitFinalWords(clone, increseMergedCounter);
                     }
@@ -243,44 +235,38 @@ namespace Algorithms.DataStructures
                 }
             }
 
-            public bool Add(string word, int wordTotalLength, int index)
+            public bool Add(string word, int index)
             {
-                if (HasSuffix)
+                if (Suffix.Length - _keyIndex > 1)
                 {
-                    if (Suffix.Length > 1)
-                    {
-                        AppendWord(Suffix, _wordTotalLength, 1); //key is not final anymore so it should be distributed further
-                        _wordTotalLength = 0;
-                        IsFinal = false;
-                    }
+                    AppendWord(Suffix, _keyIndex + 1); //key is not final anymore so it should be distributed further
+                    IsFinal = false;
                     Suffix = string.Empty;
                 }
 
                 if (word.Length - index == 1)
                 {
-                    Suffix = string.Empty;
+                    Suffix = word;
                     bool wasFinal = IsFinal;
                     IsFinal = true;
-                    _wordTotalLength = wordTotalLength;
-
                     return wasFinal ^ IsFinal;
                 }
 
-                return AppendWord(word, wordTotalLength, index + 1);
+                return AppendWord(word, index + 1);
             }
 
-            private bool AppendWord(string word, int wordTotalLength, int index)
+            private bool AppendWord(string word, int index)
             {
                 if (_child is null && _children is null) // first child being added. It might be the only one
                 {
-                    _child = new SuffixTreeNode(this, word.Substring(index), wordTotalLength);
+                    _child = new SuffixTreeNode(this, word);
                     return true;
                 }
 
                 var key = word[index];
                 if (_child != null && _child.Key == key)
                 {
-                    return _child.Add(word, wordTotalLength, index);
+                    return _child.Add(word, index);
                 }
 
                 if (_children is null) // second child added, use dictionary from now
@@ -294,9 +280,9 @@ namespace Algorithms.DataStructures
 
                 if (_children.TryGetValue(key, out SuffixTreeNode node))
                 {
-                    return node.Add(word, wordTotalLength, index);
+                    return node.Add(word, index);
                 }
-                _children.Add(key, new SuffixTreeNode(this, word.Substring(index), wordTotalLength));
+                _children.Add(key, new SuffixTreeNode(this, word));
                 return true;
             }
 
@@ -377,7 +363,7 @@ namespace Algorithms.DataStructures
                     var node = tails.Pop();
                     if (node.IsFinal)
                     {
-                        yield return ComposeWord(node);
+                        yield return node.Suffix;
                         if (node.IsEmptyNode())
                         {
                             continue;
@@ -399,59 +385,9 @@ namespace Algorithms.DataStructures
                 yield break;
             }
 
-            private string ComposeWord(SuffixTreeNode node)
-            {
-                if (!node.IsFinal)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                char[] word = new char[node._wordTotalLength];
-                int wordIndex = node._wordTotalLength - 1;
-                if (node.HasSuffix)
-                {
-                    for (int i = node.Suffix.Length - 1; i >= 0; i--)
-                    {
-                        word[wordIndex] = node.Suffix[i];
-                        wordIndex--;
-                    }
-                }
-                else
-                {
-                    word[wordIndex] = node.Key;
-                    wordIndex--;
-                }
-
-                SuffixTreeNode parent = node._parentNode;
-                while (parent != null)
-                {
-                    if (parent.HasSuffix)
-                    {
-                        for (int i = parent.Suffix.Length - 1; i >= 0; i--)
-                        {
-                            word[wordIndex] = parent.Suffix[i];
-                            wordIndex--;
-                        }
-                    }
-                    else
-                    {
-                        word[wordIndex] = parent.Key;
-                        wordIndex--;
-                    }
-
-                    parent = parent._parentNode;
-                }
-                return new string(word);
-            }
-
             public bool Remove(string wordToRemove)
             {
                 int patternIndex = 1;
-                char[] pattern = wordToRemove.ToCharArray();
-
-                int resultIndex = 0;
-                var result = new char[wordToRemove.Length];
-                
                 SuffixTreeNode currentNode = this;
                 bool wasRemoved = false;
 
@@ -459,38 +395,21 @@ namespace Algorithms.DataStructures
                 {
                     int suffixLength = currentNode.HasSuffix ? currentNode.Suffix.Length : 1;
 
-                    if (resultIndex + suffixLength > pattern.Length)
+                    if (suffixLength > wordToRemove.Length)
                     {
                         return false;
                     }
 
-                    if (suffixLength > 1)
-                    {
-                        for (int i = 0; i < suffixLength; i++)
-                        {
-                            result[resultIndex] = currentNode.Suffix[i];
-                            resultIndex++;
-                        }
-                    }
-                    else
-                    {
-                        result[resultIndex] = currentNode.Key;
-                        resultIndex++;
-                    }
-
-                    if (currentNode.IsFinal && resultIndex == pattern.Length && Enumerable.SequenceEqual(pattern, result))
+                    if (currentNode.IsFinal && 
+                        suffixLength == wordToRemove.Length && 
+                        string.Compare(currentNode.Suffix, wordToRemove, false) == 0)
                     {
                         wasRemoved = true;
                         currentNode.IsFinal = false;
                         break;
                     }
 
-                    if (patternIndex >= pattern.Length)
-                    {
-                        break;
-                    }
-
-                    char key = pattern[patternIndex];
+                    char key = wordToRemove[patternIndex];
                     if (!currentNode.TryGetChild(key, out SuffixTreeNode childNode))
                     {
                         break;
@@ -536,41 +455,15 @@ namespace Algorithms.DataStructures
                     return;
                 }
 
-                char[] suffix = new char[compactingTail._wordTotalLength];
-                int suffixIdx = compactingTail._wordTotalLength - 1;
-
-                if (compactingTail.HasSuffix)
-                {
-                    for (int i = compactingTail.Suffix.Length - 1; i >= 0; i--)
-                    {
-                        suffix[suffixIdx] = compactingTail.Suffix[i];
-                        suffixIdx--;
-                    }
-                }
-                else
-                {
-                    suffix[suffixIdx] = compactingTail.Key;
-                    suffixIdx--;
-                }
+                string suffix = compactingTail.Suffix;
+                int keyIndex = compactingTail._keyIndex;
                 compactingTail.IsFinal = false;
 
                 SuffixTreeNode previousNode = compactingTail;
                 SuffixTreeNode currentNode = compactingTail._parentNode;
                 while (currentNode != null && currentNode.RemoveChild(previousNode.Key))
                 {
-                    if (currentNode.HasSuffix)
-                    {
-                        for (int i = currentNode.Suffix.Length - 1; i >= 0; i--)
-                        {
-                            suffix[suffixIdx] = currentNode.Suffix[i];
-                            suffixIdx--;
-                        }
-                    }
-                    else
-                    {
-                        suffix[suffixIdx] = currentNode.Key;
-                        suffixIdx--;
-                    }
+                    keyIndex--;
 
                     previousNode = currentNode;
                     currentNode = currentNode._parentNode;
@@ -579,10 +472,9 @@ namespace Algorithms.DataStructures
                 if (currentNode is null) // we reached the top level node
                 {
                     currentNode = previousNode;
-                    suffixIdx++;
                 }
 
-                currentNode.Add(new string(suffix), compactingTail._wordTotalLength, suffixIdx);
+                currentNode.Add(suffix, keyIndex);
             }
 
             private bool RemoveChild(char key)
@@ -623,7 +515,7 @@ namespace Algorithms.DataStructures
                     Suffix = Suffix,
                     Key = Key,
                 };
-                node._wordTotalLength = _wordTotalLength;
+                node._keyIndex = _keyIndex;
 
                 if (_child != null)
                 {
