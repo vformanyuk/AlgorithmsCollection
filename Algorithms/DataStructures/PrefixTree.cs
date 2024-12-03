@@ -408,7 +408,7 @@ namespace Algorithms.DataStructures
                         }
                     }
 
-                    if (!nodeAdded && node.IsFinal)
+                    if (!nodeAdded && (node.IsFinal && Char.ToLowerInvariant(node.Suffix[patternIndex]) == Char.ToLowerInvariant(key)))
                     {
                         tails.Push(node);
                     }

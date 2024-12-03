@@ -239,7 +239,7 @@ namespace Algorithms.Tests
             var commonCount = verbs.Intersect(commonWords).Count();
             _uniqCount = verbs.Length + commonWords.Length - commonCount;
 
-            _testSubject = new PrefixTree();
+            _testSubject = new PrefixTree('*');
             foreach (var word in verbs)
             {
                 _testSubject.Add(word);
@@ -257,6 +257,13 @@ namespace Algorithms.Tests
         {
             _testSubject.Merge(_mergeTree);
             Assert.AreEqual(_uniqCount, _testSubject.WordsCount);
+        }
+
+        [TestMethod]
+        public void TestFind_WildCard()
+        {
+            var results = _testSubject.Match("*i", caseSensitive: true).ToList();
+            Assert.AreEqual(10, results.Count);
         }
 
         [TestMethod]
