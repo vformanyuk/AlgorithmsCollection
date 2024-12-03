@@ -116,39 +116,50 @@ namespace Algorithms.Benchmarks
         [Benchmark(Baseline = true)]
         public void Load()
         {
-            var SuffixTree = new SuffixTree();
+            var PrefixTree = new PrefixTree();
             foreach (var word in verbs)
             {
-                SuffixTree.Add(word);
+                PrefixTree.Add(word);
             }
         }
 
         [Benchmark]
         public void FindMatch()
         {
-            var SuffixTree = new SuffixTree();
+            var PrefixTree = new PrefixTree();
             foreach (var word in verbs)
             {
-                SuffixTree.Add(word);
+                PrefixTree.Add(word);
             }
 
-            SuffixTree.Match("STR", caseSensitive: true);
-            SuffixTree.Match("co", caseSensitive: true);
+            PrefixTree.Match("con", caseSensitive: true);
+        }
+
+        [Benchmark]
+        public void FindWildcardMatch()
+        {
+            var PrefixTree = new PrefixTree('*');
+            foreach (var word in verbs)
+            {
+                PrefixTree.Add(word);
+            }
+
+            PrefixTree.Match("c*n", caseSensitive: true);
         }
 
         [Benchmark]
         public bool RemoveAll()
         {
-            var SuffixTree = new SuffixTree();
+            var PrefixTree = new PrefixTree();
             foreach (var word in verbs)
             {
-                SuffixTree.Add(word);
+                PrefixTree.Add(word);
             }
 
             bool result = true;
             foreach (var word in verbs)
             {
-                result &= SuffixTree.Remove(word);
+                result &= PrefixTree.Remove(word);
             }
             return result;
         }

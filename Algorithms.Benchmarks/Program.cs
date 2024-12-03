@@ -7,8 +7,8 @@ namespace Algorithms.Benchmarks
     {
         static void Main(string[] args)
         {
-            //BenchmarkRunner.Run<SuffixTreeBenchmarks>();
-            BenchmarkRunner.Run<SuffixTreeMergeBenchmarks>();
+            BenchmarkRunner.Run<SuffixTreeBenchmarks>();
+            //BenchmarkRunner.Run<SuffixTreeMergeBenchmarks>();
 
 
             //var benchmarks = new SuffixTreeMergeBenchmarks();

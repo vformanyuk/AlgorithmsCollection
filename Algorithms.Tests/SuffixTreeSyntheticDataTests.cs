@@ -1,7 +1,7 @@
 using Algorithms.DataStructures;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using System;
 using System.Linq;
 
 namespace Algorithms.Tests
@@ -9,13 +9,13 @@ namespace Algorithms.Tests
     [TestClass]
     public class SuffixTreeSyntheticDataTests
     {
-        private SuffixTree _testSubject;
-        private SuffixTree _mergeTree;
+        private PrefixTree _testSubject;
+        private PrefixTree _mergeTree;
 
         [TestInitialize]
         public void Setup()
         {
-            _testSubject = new SuffixTree();
+            _testSubject = new PrefixTree('*');
 
             _testSubject.Add("string");
             _testSubject.Add("strange");
@@ -28,7 +28,7 @@ namespace Algorithms.Tests
             _testSubject.Add("def");
             _testSubject.Add(" random");
 
-            _mergeTree = new SuffixTree();
+            _mergeTree = new PrefixTree();
             _mergeTree.Add("believe");
             _mergeTree.Add("hold");
             _mergeTree.Add("bring");
@@ -62,6 +62,12 @@ namespace Algorithms.Tests
         public void TestAdd()
         {
             Assert.AreEqual(10, _testSubject.WordsCount);
+        }
+
+        [TestMethod]
+        public void TestAddWildcard()
+        {
+            Assert.ThrowsException<ArgumentException>(() => _testSubject.Add("te*t"));
         }
 
         [DataTestMethod]
@@ -111,6 +117,32 @@ namespace Algorithms.Tests
             Assert.AreEqual("STRONG", words[0]);
             Assert.AreEqual("STRONGER", words[1]);
             Assert.AreEqual("STRONGEST", words[2]);
+        }
+
+        [TestMethod]
+        public void TestMatch_WildCard()
+        {
+            var words = _testSubject.Match("str*n", caseSensitive: true).ToList();
+
+            Assert.AreEqual(2, words.Count);
+
+            Assert.AreEqual("string", words[0]);
+            Assert.AreEqual("strange", words[1]);
+        }
+
+        [TestMethod]
+        public void TestMatch_WildCard_CaseInsensetive()
+        {
+            var words = _testSubject.Match("str*n", caseSensitive: false).ToList();
+
+            Assert.AreEqual(6, words.Count);
+
+            Assert.AreEqual("string", words[0]);
+            Assert.AreEqual("strange", words[1]);
+            Assert.AreEqual("Strong", words[2]);
+            Assert.AreEqual("STRONG", words[3]);
+            Assert.AreEqual("STRONGER", words[4]);
+            Assert.AreEqual("STRONGEST", words[5]);
         }
 
         [TestMethod]

@@ -11,8 +11,8 @@ namespace Algorithms.Tests
     [TestClass]
     public class SuffixTreeRealDataTests
     {
-        private SuffixTree _testSubject;
-        private SuffixTree _mergeTree;
+        private PrefixTree _testSubject;
+        private PrefixTree _mergeTree;
 
         private int _uniqCount;
 
@@ -239,13 +239,13 @@ namespace Algorithms.Tests
             var commonCount = verbs.Intersect(commonWords).Count();
             _uniqCount = verbs.Length + commonWords.Length - commonCount;
 
-            _testSubject = new SuffixTree();
+            _testSubject = new PrefixTree();
             foreach (var word in verbs)
             {
                 _testSubject.Add(word);
             }
 
-            _mergeTree = new SuffixTree();
+            _mergeTree = new PrefixTree();
             foreach (var word in commonWords)
             {
                 _mergeTree.Add(word);

@@ -112,6 +112,15 @@ Store entire word in final nodes. Don't compose words on search and remove
 | FindMatch | 4.702 us | 0.0613 us | 0.0573 us |  0.94 |    0.02 |  22.66 KB |        1.01 |
 | RemoveAll | 9.122 us | 0.0254 us | 0.0212 us |  1.83 |    0.03 |  25.18 KB |        1.12 |
 
+Add wild card support. FindMatch refactored to be more representative
+
+| Method            | Mean      | Error     | StdDev    | Ratio | RatioSD | Allocated | Alloc Ratio |
+|------------------ |----------:|----------:|----------:|------:|--------:|----------:|------------:|
+| Load              |  5.379 us | 0.0989 us | 0.0925 us |  1.00 |    0.00 |   24.4 KB |        1.00 |
+| FindMatch         |  5.152 us | 0.0547 us | 0.0512 us |  0.96 |    0.02 |  24.52 KB |        1.00 |
+| FindWildcardMatch |  5.340 us | 0.0321 us | 0.0300 us |  0.99 |    0.02 |  24.52 KB |        1.00 |
+| RemoveAll         | 10.010 us | 0.0673 us | 0.0597 us |  1.86 |    0.03 |  27.15 KB |        1.11 |
+
 ---------------------------------------------------------------------------------------------------------------------------------------
 
 Merge. Using two arrays of 100 words each for benchmarking

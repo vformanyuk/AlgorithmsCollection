@@ -227,7 +227,7 @@ namespace Algorithms.Benchmarks
         [Benchmark(Baseline = true)]
         public void Add()
         {
-            var source = new SuffixTree();
+            var source = new PrefixTree();
             foreach (var word in verbs)
             {
                 source.Add(word);
@@ -237,38 +237,34 @@ namespace Algorithms.Benchmarks
             {
                 source.Add(word);
             }
-
-            //source.Merge(merge);
         }
 
         [Benchmark]
         public void CreateNoMerge()
         {
-            var source = new SuffixTree();
+            var source = new PrefixTree();
             foreach (var word in verbs)
             {
                 source.Add(word);
             }
 
-            var merge = new SuffixTree();
+            var merge = new PrefixTree();
             foreach (var word in commonWords)
             {
                 merge.Add(word);
             }
-
-            //source.Merge(merge);
         }
 
         [Benchmark]
         public void CreateMerge()
         {
-            var source = new SuffixTree();
+            var source = new PrefixTree();
             foreach (var word in verbs)
             {
                 source.Add(word);
             }
 
-            var merge = new SuffixTree();
+            var merge = new PrefixTree();
             foreach (var word in commonWords)
             {
                 merge.Add(word);
@@ -280,13 +276,13 @@ namespace Algorithms.Benchmarks
         [Benchmark]
         public void FindInMerged()
         {
-            var source = new SuffixTree();
+            var source = new PrefixTree();
             foreach (var word in verbs)
             {
                 source.Add(word);
             }
 
-            var merge = new SuffixTree();
+            var merge = new PrefixTree();
             foreach (var word in commonWords)
             {
                 merge.Add(word);
@@ -304,7 +300,7 @@ namespace Algorithms.Benchmarks
         [Benchmark]
         public void FindInAdded()
         {
-            var source = new SuffixTree();
+            var source = new PrefixTree();
             foreach (var word in verbs)
             {
                 source.Add(word);
@@ -325,22 +321,20 @@ namespace Algorithms.Benchmarks
         [Benchmark]
         public void Find_Parallel_2()
         {
-            var source = new SuffixTree();
+            var source = new PrefixTree();
             foreach (var word in verbs)
             {
                 source.Add(word);
             }
 
-            var merge = new SuffixTree();
+            var merge = new PrefixTree();
             foreach (var word in commonWords)
             {
                 merge.Add(word);
             }
 
-            //source.Merge(merge);
-
             var resultContainer = new ConcurrentBag<string>();
-            SuffixTree[] trees = [source, merge];
+            PrefixTree[] trees = [source, merge];
             Parallel.ForEach(trees, t =>
             {
                 foreach (var word in t.Match("s", true))
@@ -353,22 +347,20 @@ namespace Algorithms.Benchmarks
         [Benchmark]
         public void Find_Parallel_10()
         {
-            var source = new SuffixTree();
+            var source = new PrefixTree();
             foreach (var word in verbs)
             {
                 source.Add(word);
             }
 
-            var merge = new SuffixTree();
+            var merge = new PrefixTree();
             foreach (var word in commonWords)
             {
                 merge.Add(word);
             }
 
-            //source.Merge(merge);
-
             var resultContainer = new ConcurrentBag<string>();
-            SuffixTree[] trees = [source, merge, source, merge, source, merge, source, merge, source, merge];
+            PrefixTree[] trees = [source, merge, source, merge, source, merge, source, merge, source, merge];
             Parallel.ForEach(trees, t =>
             {
                 foreach (var word in t.Match("s", true))
