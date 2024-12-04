@@ -1,6 +1,7 @@
 ﻿using Algorithms.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace Algorithms.DataStructures
@@ -37,22 +38,19 @@ namespace Algorithms.DataStructures
             if (!_subPrefixTrees.ContainsKey(firstChar))
             {
                 _subPrefixTrees.Add(firstChar, new PrefixTreeNode(word, _wildcard));
+                
                 _wordsCount++;
+                AddHistogramEntry(word.Length);
                 return true;
             }
+
             bool addResult = _subPrefixTrees[firstChar].Add(word, 0);
             if (addResult)
             {
                 _wordsCount++;
-                if (_lengthHistogram.TryGetValue(word.Length, out int count))
-                {
-                    _lengthHistogram[word.Length] = count + 1;
-                }
-                else
-                {
-                    _lengthHistogram.Add(word.Length, 1);
-                }
+                AddHistogramEntry(word.Length);
             }
+
             return addResult;
         }
 
@@ -111,6 +109,17 @@ namespace Algorithms.DataStructures
                 }
 
                 _wordsCount -= removeResult ? 1 : 0;
+                if (removeResult && _lengthHistogram.TryGetValue(word.Length, out int count))
+                {
+                    if(count - 1 <= 0)
+                    {
+                        _lengthHistogram.Remove(word.Length);
+                    }
+                    else
+                    {
+                        _lengthHistogram[word.Length] = count - 1;
+                    }
+                }
             }
             return removeResult;
         }
@@ -130,6 +139,23 @@ namespace Algorithms.DataStructures
                     _subPrefixTrees.Add(node.Key, clone);
                     PrefixTreeNode.VisitFinalWords(clone, _ => _wordsCount++);
                 }
+            }
+
+            foreach (var kvp in merge.LengthHistogram)
+            {
+                AddHistogramEntry(kvp.Key, kvp.Value);
+            }
+        }
+
+        private void AddHistogramEntry(int wordLength, int count = 1)
+        {
+            if (_lengthHistogram.TryGetValue(wordLength, out int existingCount))
+            {
+                _lengthHistogram[wordLength] = existingCount + count;
+            }
+            else
+            {
+                _lengthHistogram.Add(wordLength, count);
             }
         }
 
