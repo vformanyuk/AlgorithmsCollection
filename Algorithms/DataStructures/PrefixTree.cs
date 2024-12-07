@@ -1,8 +1,8 @@
 ﻿using Algorithms.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
+using System.Runtime.Intrinsics;
 
 namespace Algorithms.DataStructures
 {
@@ -12,6 +12,7 @@ namespace Algorithms.DataStructures
         private int _wordsCount = 0;
 
         private readonly char _wildcard;
+        public char Wildcard => _wildcard;
 
         public int WordsCount => _wordsCount;
 
@@ -389,9 +390,9 @@ namespace Algorithms.DataStructures
                 var nodes = new Stack<(int patternIndex, PrefixTreeNode node)>();
                 var tails = new Stack<PrefixTreeNode>();
 
-                nodes.Push((0,this));
                 bool nodeAdded = false;
 
+                nodes.Push((0,this));
                 while (nodes.Count > 0)
                 {
                     var (patternIndex, node) = nodes.Pop();
@@ -404,6 +405,7 @@ namespace Algorithms.DataStructures
                     }
 
                     char key = pattern[patternIndex];
+                    nodeAdded = false;
 
                     if (key == _wildCard)
                     {
@@ -415,14 +417,11 @@ namespace Algorithms.DataStructures
                     }
                     else
                     {
-                        nodeAdded = false;
-                        
                         if (node.TryGetChild(key, out PrefixTreeNode child))
                         {
                             nodes.Push((patternIndex, child));
                             nodeAdded = true;
                         }
-
                         if (!caseSensitive)
                         {
                             char branchKey = Char.IsUpper(key) ? Char.ToLower(key) : Char.ToUpper(key);
@@ -432,11 +431,11 @@ namespace Algorithms.DataStructures
                                 nodeAdded = true;
                             }
                         }
-                    }
 
-                    if (!nodeAdded && (node.IsFinal && Char.ToLowerInvariant(node.Suffix[patternIndex]) == Char.ToLowerInvariant(key)))
-                    {
-                        tails.Push(node);
+                        if (!nodeAdded && node.IsFinal && CompareWithMask(node.Suffix, patternIndex - 1, pattern, patternIndex - 1, _wildCard))
+                        {
+                            tails.Push(node);
+                        }
                     }
                 }
 
@@ -562,6 +561,24 @@ namespace Algorithms.DataStructures
                 }
 
                 currentNode.Add(suffix, keyIndex);
+            }
+
+            private static bool CompareWithMask(string source, int startSource, string pattern, int patternStart, char wildcard)
+            {
+                if (source.Length < pattern.Length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < pattern.Length - patternStart; i++)
+                {
+                    if (pattern[patternStart + i] == wildcard) continue;
+                    if (Char.ToLowerInvariant(pattern[patternStart + i]) != Char.ToLowerInvariant(source[startSource + i]))
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
 
             private bool RemoveChild(char key)
